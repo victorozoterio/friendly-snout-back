@@ -5,13 +5,19 @@ import { z } from 'zod';
 const environments = Object.values(Environments) as [string, ...string[]];
 
 const envSchema = z.object({
+  // Environment
   NODE_ENV: z.enum(environments),
   PORT: z.coerce.number().default(3000),
+
+  // Database
   DB_NAME: z.string(),
   DB_HOST: z.string(),
   DB_PORT: z.coerce.number().default(5432),
   DB_USERNAME: z.string(),
   DB_PASSWORD: z.string(),
+
+  // Keys
+  JWT_SECRET_KEY: z.string(),
 });
 
 const validate = (config: Record<string, string>) => {

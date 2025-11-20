@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsDate, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import {
   AnimalBreed,
   AnimalColor,
@@ -10,74 +9,55 @@ import {
   AnimalStatus,
 } from 'src/utils';
 
-export class CreateAnimalDto {
-  @IsNotEmpty()
-  @IsString()
+export class AnimalDto {
+  @ApiProperty()
+  uuid: string;
+
   @ApiProperty()
   name: string;
 
-  @IsNotEmpty()
-  @IsEnum(AnimalSex)
   @ApiProperty({ enum: AnimalSex })
   sex: AnimalSex;
 
-  @IsNotEmpty()
-  @IsEnum(AnimalSpecies)
   @ApiProperty({ enum: AnimalSpecies })
   species: AnimalSpecies;
 
-  @IsNotEmpty()
-  @IsEnum(AnimalBreed)
   @ApiProperty({ enum: AnimalBreed })
   breed: AnimalBreed;
 
-  @IsNotEmpty()
-  @IsEnum(AnimalSize)
   @ApiProperty({ enum: AnimalSize })
   size: AnimalSize;
 
-  @IsNotEmpty()
-  @IsEnum(AnimalColor)
   @ApiProperty({ enum: AnimalColor })
   color: AnimalColor;
 
-  @IsOptional()
-  @IsDate()
   @ApiProperty()
-  birthDate: Date;
+  birthDate: string;
 
-  @IsOptional()
-  @IsString()
   @ApiProperty()
   microchip: string;
 
-  @IsOptional()
-  @IsString()
   @ApiProperty()
   rga: string;
 
-  @IsNotEmpty()
-  @IsBoolean()
   @ApiProperty()
   castrated: boolean;
 
-  @IsOptional()
-  @IsEnum(AnimalFivAndFelv)
   @ApiProperty({ enum: AnimalFivAndFelv })
   fiv: AnimalFivAndFelv;
 
-  @IsOptional()
-  @IsEnum(AnimalFivAndFelv)
   @ApiProperty({ enum: AnimalFivAndFelv })
   felv: AnimalFivAndFelv;
 
-  @IsNotEmpty()
-  @IsEnum(AnimalStatus)
   @ApiProperty({ enum: AnimalStatus })
   status: AnimalStatus;
 
-  @IsOptional()
-  @IsString()
   @ApiProperty()
   notes: string;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
 }

@@ -45,6 +45,6 @@ export class UsersService {
     const userExists = await this.repository.findOneBy({ uuid });
     if (!userExists) throw new NotFoundException('User does not exist');
 
-    return this.repository.remove(userExists);
+    await this.repository.remove(userExists);
   }
 }

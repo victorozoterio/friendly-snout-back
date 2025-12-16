@@ -7,6 +7,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { UnauthorizedException } from '@nestjs/common';
 import { CreateAuthDto } from 'src/modules/auth/dto/create-auth.dto';
 import { verify } from 'argon2';
+import { RefreshTokenDto } from 'src/modules/auth/dto/refresh-token.dto';
 
 jest.mock('argon2', () => ({
   verify: jest.fn(),
@@ -23,6 +24,7 @@ describe('AuthService', () => {
 
   const mockJwtService = {
     sign: jest.fn(),
+    decode: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -72,17 +74,96 @@ describe('AuthService', () => {
       await expect(authService.signIn(dto)).rejects.toThrow('Invalid credentials');
     });
 
-    it('should return an access token if credentials are valid', async () => {
+    it('should return accessToken and refreshToken if credentials are valid', async () => {
       const dto: CreateAuthDto = { email: 'test@example.com', password: 'password' };
       const mockUser: Partial<UserEntity> = { uuid: '1234', email: 'test@example.com', password: 'hashedPassword' };
 
       mockUserRepository.findOneBy.mockResolvedValueOnce(mockUser);
       (verify as jest.Mock).mockResolvedValueOnce(true);
-      mockJwtService.sign.mockReturnValue('access_token');
+      mockJwtService.sign.mockReturnValueOnce('access_token').mockReturnValueOnce('refresh_token');
 
       const result = await authService.signIn(dto);
-      expect(result).toEqual({ accessToken: 'access_token' });
-      expect(mockJwtService.sign).toHaveBeenCalledWith({ email: dto.email, sub: mockUser.uuid });
+      expect(result).toEqual({ accessToken: 'access_token', refreshToken: 'refresh_token' });
+      expect(mockJwtService.sign).toHaveBeenNthCalledWith(
+        1,
+        { email: dto.email, sub: mockUser.uuid, type: 'access' },
+        { expiresIn: '30m' },
+      );
+
+      expect(mockJwtService.sign).toHaveBeenNthCalledWith(
+        2,
+        { email: dto.email, sub: mockUser.uuid, type: 'refresh' },
+        { expiresIn: '12h' },
+      );
+    });
+  });
+
+  describe('refreshToken', () => {
+    it('throws UnauthorizedException when token type is not refresh', async () => {
+      const dto: RefreshTokenDto = { refreshToken: 'token' };
+
+      (mockJwtService.decode as jest.Mock).mockReturnValueOnce({
+        type: 'access', // invalid
+        sub: '1234',
+        email: 'test@example.com',
+      });
+
+      await expect(authService.refreshToken(dto)).rejects.toThrow(new UnauthorizedException('Invalid token type'));
+    });
+
+    it('throws UnauthorizedException when user is not found', async () => {
+      const dto: RefreshTokenDto = { refreshToken: 'token' };
+
+      (mockJwtService.decode as jest.Mock).mockReturnValueOnce({
+        type: 'refresh',
+        sub: '1234',
+        email: 'test@example.com',
+      });
+
+      mockUserRepository.findOneBy.mockResolvedValueOnce(null); // user not found
+
+      await expect(authService.refreshToken(dto)).rejects.toThrow(new UnauthorizedException('Invalid refresh token'));
+
+      expect(mockUserRepository.findOneBy).toHaveBeenCalledWith({ uuid: '1234' });
+    });
+
+    it('returns new accessToken and refreshToken when refresh token is valid', async () => {
+      const dto: RefreshTokenDto = { refreshToken: 'token' };
+
+      (mockJwtService.decode as jest.Mock).mockReturnValueOnce({
+        type: 'refresh',
+        sub: '1234',
+        email: 'test@example.com',
+      });
+
+      const user: Pick<UserEntity, 'uuid' | 'email'> = {
+        uuid: '1234',
+        email: 'test@example.com',
+      };
+      mockUserRepository.findOneBy.mockResolvedValueOnce(user);
+
+      (mockJwtService.sign as jest.Mock)
+        .mockReturnValueOnce('new_access_token')
+        .mockReturnValueOnce('new_refresh_token');
+
+      const result = await authService.refreshToken(dto);
+
+      expect(result).toEqual({
+        accessToken: 'new_access_token',
+        refreshToken: 'new_refresh_token',
+      });
+
+      expect(mockJwtService.sign).toHaveBeenNthCalledWith(
+        1,
+        { email: user.email, sub: user.uuid, type: 'access' },
+        { expiresIn: '30m' },
+      );
+
+      expect(mockJwtService.sign).toHaveBeenNthCalledWith(
+        2,
+        { email: user.email, sub: user.uuid, type: 'refresh' },
+        { expiresIn: '12h' },
+      );
     });
   });
 });

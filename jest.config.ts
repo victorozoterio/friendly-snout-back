@@ -3,7 +3,7 @@ import type { Config } from 'jest';
 const config: Config = {
   testEnvironment: 'node',
   roots: ['<rootDir>/src', '<rootDir>/__tests__'],
-  testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
+  testMatch: ['**/?(*.)+(spec|test).ts'],
   transform: {
     '^.+\\.(t|j)s$': '@swc/jest',
   },
@@ -14,6 +14,7 @@ const config: Config = {
   coverageReporters: ['text', 'lcov', 'html'],
   coveragePathIgnorePatterns: [
     'index.ts',
+    '/__tests__/',
     '/src/config/.*\\.ts$',
     '/src/migrations/.*\\.ts$',
     '/src/modules/.*/dto/.*\\.ts$',

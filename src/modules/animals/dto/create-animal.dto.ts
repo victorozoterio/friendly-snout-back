@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { IsBoolean, IsDate, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import {
   AnimalBreed,
@@ -43,7 +44,7 @@ export class CreateAnimalDto {
 
   @IsOptional()
   @IsDate()
-  @ApiProperty()
+  @Transform(({ value }) => new Date(value))
   birthDate: Date;
 
   @IsOptional()

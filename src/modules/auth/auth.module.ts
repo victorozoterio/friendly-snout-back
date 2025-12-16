@@ -7,13 +7,7 @@ import { UserEntity } from '../users/entities/user.entity';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([UserEntity]),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET_KEY,
-      signOptions: { expiresIn: '30m' },
-    }),
-  ],
+  imports: [TypeOrmModule.forFeature([UserEntity]), JwtModule.register({ secret: process.env.JWT_SECRET_KEY })],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
 })

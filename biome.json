@@ -23,16 +23,19 @@
         "noUnusedVariables": "error"
       },
       "suspicious": {
+        "noExplicitAny": "error",
         "noConsole": {
           "level": "warn",
           "options": { "allow": ["error", "warn", "info", "assert"] }
         }
       },
       "style": {
-        "useImportType": "off"
+        "useImportType": "off",
+        "useNodejsImportProtocol": "error"
       },
       "complexity": {
-        "noForEach": "off"
+        "noForEach": "off",
+        "noStaticOnlyClass": "off"
       }
     }
   },

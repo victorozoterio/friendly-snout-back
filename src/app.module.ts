@@ -5,6 +5,7 @@ import { databaseConfig, envConfig } from './config';
 import { AnimalsModule } from './modules/animals/animals.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
+import { MedicineBrandsModule } from './modules/medicine-brands/medicine-brands.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -15,6 +16,7 @@ import { UsersModule } from './modules/users/users.module';
     UsersModule,
     AuthModule,
     AnimalsModule,
+    MedicineBrandsModule,
   ],
   controllers: [],
   providers: [],

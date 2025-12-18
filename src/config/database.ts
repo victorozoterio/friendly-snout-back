@@ -1,9 +1,9 @@
 import 'tsconfig-paths/register';
 import 'reflect-metadata';
 import 'dotenv/config';
+import * as path from 'node:path';
 import { TypeOrmModuleAsyncOptions, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { DataSource, DataSourceOptions } from 'typeorm';
-import * as path from 'node:path';
 
 export const buildOptions = (): DataSourceOptions => ({
   type: 'postgres',

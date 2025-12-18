@@ -1,13 +1,12 @@
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ConflictException, NotFoundException } from '@nestjs/common';
-import { Repository } from 'typeorm';
-
-import { UsersService } from 'src/modules/users/users.service';
-import { UserEntity } from 'src/modules/users/entities/user.entity';
+import { hash } from 'argon2';
 import { CreateUserDto } from 'src/modules/users/dto/create-user.dto';
 import { UpdateUserDto } from 'src/modules/users/dto/update-user.dto';
-import { hash } from 'argon2';
+import { UserEntity } from 'src/modules/users/entities/user.entity';
+import { UsersService } from 'src/modules/users/users.service';
+import { Repository } from 'typeorm';
 
 jest.mock('argon2', () => ({
   hash: jest.fn(),

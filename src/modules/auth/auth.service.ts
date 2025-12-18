@@ -1,10 +1,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { UserEntity } from '../users/entities/user.entity';
-import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { verify } from 'argon2';
+import { Repository } from 'typeorm';
+import { UserEntity } from '../users/entities/user.entity';
+import { CreateAuthDto } from './dto/create-auth.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Injectable()

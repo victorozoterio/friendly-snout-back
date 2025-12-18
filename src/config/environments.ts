@@ -1,6 +1,6 @@
 import { ConfigModuleOptions } from '@nestjs/config';
-import { Environment } from '../utils';
 import { z } from 'zod';
+import { Environment } from '../utils';
 
 const environments = Object.values(Environment) as [string, ...string[]];
 

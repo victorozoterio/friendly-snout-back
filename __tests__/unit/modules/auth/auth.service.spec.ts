@@ -1,13 +1,13 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { verify } from 'argon2';
 import { AuthService } from 'src/modules/auth/auth.service';
+import { CreateAuthDto } from 'src/modules/auth/dto/create-auth.dto';
+import { RefreshTokenDto } from 'src/modules/auth/dto/refresh-token.dto';
 import { UserEntity } from 'src/modules/users/entities/user.entity';
 import { Repository } from 'typeorm';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { UnauthorizedException } from '@nestjs/common';
-import { CreateAuthDto } from 'src/modules/auth/dto/create-auth.dto';
-import { verify } from 'argon2';
-import { RefreshTokenDto } from 'src/modules/auth/dto/refresh-token.dto';
 
 jest.mock('argon2', () => ({
   verify: jest.fn(),

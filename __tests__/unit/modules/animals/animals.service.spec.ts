@@ -1,11 +1,11 @@
+import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { NotFoundException } from '@nestjs/common';
-import { Repository } from 'typeorm';
 import { AnimalsService } from 'src/modules/animals/animals.service';
-import { AnimalEntity } from 'src/modules/animals/entities/animal.entity';
 import { CreateAnimalDto } from 'src/modules/animals/dto/create-animal.dto';
 import { UpdateAnimalDto } from 'src/modules/animals/dto/update-animal.dto';
+import { AnimalEntity } from 'src/modules/animals/entities/animal.entity';
+import { Repository } from 'typeorm';
 
 import { mockAnimalEntity, mockCreateAnimalDto } from '../../mocks';
 

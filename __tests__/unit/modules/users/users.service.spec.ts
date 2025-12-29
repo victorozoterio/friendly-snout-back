@@ -57,9 +57,7 @@ describe('UsersService', () => {
 
       mockUserRepository.findOneBy.mockResolvedValueOnce({ email: dto.email });
 
-      const createUserCall = usersService.create(dto);
-      await expect(createUserCall).rejects.toThrow(ConflictException);
-      await expect(createUserCall).rejects.toThrow('User already exists');
+      await expect(usersService.create(dto)).rejects.toThrow(new ConflictException('User already exists'));
       expect(mockUserRepository.findOneBy).toHaveBeenCalledWith({ email: dto.email });
     });
 
@@ -112,8 +110,7 @@ describe('UsersService', () => {
     it('should throw NotFoundException if user does not exist', async () => {
       mockUserRepository.findOneBy.mockResolvedValueOnce(null);
 
-      await expect(usersService.findOne('123')).rejects.toThrow(NotFoundException);
-      await expect(usersService.findOne('123')).rejects.toThrow('User does not exist');
+      await expect(usersService.findOne('123')).rejects.toThrow(new NotFoundException('User does not exist'));
       expect(mockUserRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
     });
 
@@ -134,8 +131,7 @@ describe('UsersService', () => {
 
       const dto: UpdateUserDto = { name: 'New Name' };
 
-      await expect(usersService.update('123', dto)).rejects.toThrow(NotFoundException);
-      await expect(usersService.update('123', dto)).rejects.toThrow('User does not exist');
+      await expect(usersService.update('123', dto)).rejects.toThrow(new NotFoundException('User does not exist'));
       expect(mockUserRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
     });
 
@@ -159,8 +155,7 @@ describe('UsersService', () => {
     it('should throw NotFoundException if user does not exist', async () => {
       mockUserRepository.findOneBy.mockResolvedValueOnce(null);
 
-      await expect(usersService.remove('123')).rejects.toThrow(NotFoundException);
-      await expect(usersService.remove('123')).rejects.toThrow('User does not exist');
+      await expect(usersService.remove('123')).rejects.toThrow(new NotFoundException('User does not exist'));
       expect(mockUserRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
     });
 

@@ -59,8 +59,7 @@ describe('AuthService', () => {
 
       mockUserRepository.findOneBy.mockResolvedValueOnce(null);
 
-      await expect(authService.signIn(dto)).rejects.toThrow(UnauthorizedException);
-      await expect(authService.signIn(dto)).rejects.toThrow('Invalid credentials');
+      await expect(authService.signIn(dto)).rejects.toThrow(new UnauthorizedException('Invalid credentials'));
     });
 
     it('should throw UnauthorizedException if password is incorrect', async () => {
@@ -70,8 +69,7 @@ describe('AuthService', () => {
       mockUserRepository.findOneBy.mockResolvedValueOnce(mockUser);
       (verify as jest.Mock).mockResolvedValueOnce(false);
 
-      await expect(authService.signIn(dto)).rejects.toThrow(UnauthorizedException);
-      await expect(authService.signIn(dto)).rejects.toThrow('Invalid credentials');
+      await expect(authService.signIn(dto)).rejects.toThrow(new UnauthorizedException('Invalid credentials'));
     });
 
     it('should return accessToken and refreshToken if credentials are valid', async () => {

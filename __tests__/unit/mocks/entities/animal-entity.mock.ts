@@ -10,7 +10,7 @@ import {
 } from 'src/utils';
 
 export const mockAnimalEntity = (): AnimalEntity => ({
-  uuid: 'animal-uuid-123',
+  uuid: '123',
   name: 'Rex',
   sex: AnimalSex.MALE,
   species: AnimalSpecies.DOG,

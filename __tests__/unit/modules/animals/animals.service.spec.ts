@@ -77,8 +77,7 @@ describe('AnimalsService', () => {
     it('should throw NotFoundException if animal does not exist', async () => {
       mockAnimalRepository.findOneBy.mockResolvedValueOnce(null);
 
-      await expect(animalsService.findOne('123')).rejects.toThrow(NotFoundException);
-      await expect(animalsService.findOne('123')).rejects.toThrow('Animal does not exist');
+      await expect(animalsService.findOne('123')).rejects.toThrow(new NotFoundException('Animal does not exist'));
 
       expect(mockAnimalRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
     });
@@ -103,8 +102,7 @@ describe('AnimalsService', () => {
         notes: 'Animal passou por avaliação veterinária.',
       };
 
-      await expect(animalsService.update('123', dto)).rejects.toThrow(NotFoundException);
-      await expect(animalsService.update('123', dto)).rejects.toThrow('Animal does not exist');
+      await expect(animalsService.update('123', dto)).rejects.toThrow(new NotFoundException('Animal does not exist'));
 
       expect(mockAnimalRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
     });
@@ -131,8 +129,7 @@ describe('AnimalsService', () => {
     it('should throw NotFoundException if animal does not exist', async () => {
       mockAnimalRepository.findOneBy.mockResolvedValueOnce(null);
 
-      await expect(animalsService.remove('123')).rejects.toThrow(NotFoundException);
-      await expect(animalsService.remove('123')).rejects.toThrow('Animal does not exist');
+      await expect(animalsService.remove('123')).rejects.toThrow(new NotFoundException('Animal does not exist'));
 
       expect(mockAnimalRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
     });

@@ -6,6 +6,7 @@ import { AnimalsModule } from './modules/animals/animals.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
 import { MedicineBrandsModule } from './modules/medicine-brands/medicine-brands.module';
+import { MedicinesModule } from './modules/medicines/medicines.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -17,6 +18,7 @@ import { UsersModule } from './modules/users/users.module';
     AuthModule,
     AnimalsModule,
     MedicineBrandsModule,
+    MedicinesModule,
   ],
   controllers: [],
   providers: [],

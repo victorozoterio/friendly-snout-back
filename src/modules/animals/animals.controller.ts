@@ -1,13 +1,10 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { BearerAuthGuard } from 'src/guards';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AnimalsService } from './animals.service';
 import { AnimalDto } from './dto/animal.dto';
 import { CreateAnimalDto } from './dto/create-animal.dto';
 import { UpdateAnimalDto } from './dto/update-animal.dto';
 
-@ApiBearerAuth('bearer-token')
-@UseGuards(BearerAuthGuard)
 @ApiTags('Animals')
 @Controller('animals')
 export class AnimalsController {

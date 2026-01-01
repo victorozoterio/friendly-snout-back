@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { databaseConfig, envConfig } from './config';
+import { BearerAuthGuard } from './guards';
 import { AnimalsModule } from './modules/animals/animals.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
@@ -21,6 +23,11 @@ import { UsersModule } from './modules/users/users.module';
     MedicinesModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: BearerAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

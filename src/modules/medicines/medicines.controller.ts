@@ -1,25 +1,10 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Patch,
-  Post,
-  Put,
-  UseGuards,
-} from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { BearerAuthGuard } from 'src/guards';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateMedicineDto } from './dto/create-medicine.dto';
 import { MedicineDto } from './dto/medicine.dto';
 import { UpdateMedicineDto } from './dto/update-medicine.dto';
 import { MedicinesService } from './medicines.service';
 
-@ApiBearerAuth('bearer-token')
-@UseGuards(BearerAuthGuard)
 @ApiTags('Medicine Brands')
 @Controller('medicines')
 export class MedicinesController {

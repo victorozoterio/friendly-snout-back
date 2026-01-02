@@ -24,6 +24,9 @@ export class MedicineApplicationEntity {
   @Column({ name: 'ends_at', type: 'timestamp', nullable: true })
   endsAt: Date;
 
+  @Column({ name: 'google_calendar_event_id', type: 'varchar', nullable: true })
+  googleCalendarEventId: string | null;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;
 

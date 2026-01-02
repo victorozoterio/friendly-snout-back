@@ -21,6 +21,9 @@ export class MedicineApplicationDto {
   endsAt: Date;
 
   @ApiProperty()
+  googleCalendarEventId: string;
+
+  @ApiProperty()
   createdAt: Date;
 
   @ApiProperty()

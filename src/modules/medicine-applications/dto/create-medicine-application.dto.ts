@@ -31,12 +31,12 @@ export class CreateMedicineApplicationDto {
   @IsNotEmpty()
   @IsDateString()
   @ApiProperty()
-  appliedAt: Date;
+  appliedAt: string;
 
   @IsOptional()
   @IsDateString()
   @ApiProperty()
-  nextApplicationAt?: Date;
+  nextApplicationAt?: string;
 
   @ValidateIf((o) => !!o.nextApplicationAt)
   @IsNotEmpty()
@@ -47,5 +47,5 @@ export class CreateMedicineApplicationDto {
   @IsOptional()
   @IsDateString()
   @ApiProperty()
-  endsAt?: Date;
+  endsAt?: string;
 }

@@ -18,6 +18,11 @@ const envSchema = z.object({
 
   // Keys
   JWT_SECRET_KEY: z.string(),
+
+  // Google Calendar
+  GOOGLE_CALENDAR_ID: z.string(),
+  GOOGLE_SERVICE_ACCOUNT_EMAIL: z.string(),
+  GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: z.string(),
 });
 
 const validate = (config: Record<string, string>) => {

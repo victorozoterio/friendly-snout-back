@@ -1,13 +1,13 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { MedicineBrandEntity } from 'src/modules/medicine-brands/entities/medicine-brand.entity';
 import { MedicineBrandsService } from 'src/modules/medicine-brands/medicine-brands.service';
 import { CreateMedicineDto } from 'src/modules/medicines/dto/create-medicine.dto';
 import { UpdateMedicineDto } from 'src/modules/medicines/dto/update-medicine.dto';
 import { MedicineEntity } from 'src/modules/medicines/entities/medicine.entity';
 import { MedicinesService } from 'src/modules/medicines/medicines.service';
 import { Repository } from 'typeorm';
+import { mockMedicineBrandEntity, mockMedicineEntity } from '../../mocks';
 
 describe('MedicinesService', () => {
   let medicinesService: MedicinesService;
@@ -26,24 +26,6 @@ describe('MedicinesService', () => {
 
   const mockMedicineBrandsService = {
     findOne: jest.fn(),
-  };
-
-  const mockMedicineBrand: MedicineBrandEntity = {
-    uuid: 'brand-uuid-123',
-    name: 'Vetnil',
-    createdAt: new Date('2024-01-10'),
-    updatedAt: new Date('2024-01-10'),
-  };
-
-  const mockMedicine: MedicineEntity = {
-    uuid: 'medicine-uuid-123',
-    name: 'dorflex',
-    description: 'semelhante ao original',
-    quantity: 1,
-    isActive: true,
-    createdAt: new Date('2024-01-10'),
-    updatedAt: new Date('2024-01-10'),
-    medicineBrand: mockMedicineBrand,
   };
 
   beforeEach(async () => {
@@ -83,6 +65,9 @@ describe('MedicinesService', () => {
         medicineBrandUuid: 'brand-uuid-123',
       };
 
+      const mockMedicineBrand = mockMedicineBrandEntity();
+      const mockMedicine = mockMedicineEntity();
+
       mockMedicineBrandsService.findOne.mockResolvedValueOnce(mockMedicineBrand);
       mockMedicineRepository.findOneBy.mockResolvedValueOnce(null);
       mockMedicineRepository.create.mockReturnValueOnce({
@@ -117,6 +102,9 @@ describe('MedicinesService', () => {
         medicineBrandUuid: 'brand-uuid-123',
       };
 
+      const mockMedicineBrand = mockMedicineBrandEntity();
+      const mockMedicine = mockMedicineEntity();
+
       mockMedicineBrandsService.findOne.mockResolvedValueOnce(mockMedicineBrand);
       mockMedicineRepository.findOneBy.mockResolvedValueOnce(null);
       mockMedicineRepository.create.mockReturnValueOnce({
@@ -146,6 +134,9 @@ describe('MedicinesService', () => {
         medicineBrandUuid: 'brand-uuid-123',
       };
 
+      const mockMedicineBrand = mockMedicineBrandEntity();
+      const mockMedicine = mockMedicineEntity();
+
       mockMedicineBrandsService.findOne.mockResolvedValueOnce(mockMedicineBrand);
       mockMedicineRepository.findOneBy.mockResolvedValueOnce(mockMedicine);
 
@@ -161,7 +152,8 @@ describe('MedicinesService', () => {
 
   describe('findAll', () => {
     it('should return all medicines with relations', async () => {
-      const medicines: MedicineEntity[] = [mockMedicine, { ...mockMedicine, uuid: 'medicine-uuid-456' }];
+      const mockMedicine = mockMedicineEntity();
+      const medicines: MedicineEntity[] = [mockMedicine, mockMedicineEntity({ uuid: 'medicine-uuid-456' })];
 
       mockMedicineRepository.find.mockResolvedValueOnce(medicines);
 
@@ -182,6 +174,7 @@ describe('MedicinesService', () => {
     });
 
     it('should return medicine if exists', async () => {
+      const mockMedicine = mockMedicineEntity();
       mockMedicineRepository.findOneBy.mockResolvedValueOnce(mockMedicine);
 
       const result = await medicinesService.findOne('123');
@@ -210,18 +203,11 @@ describe('MedicinesService', () => {
     });
 
     it('should throw ConflictException if medicine with same name and brand already exists', async () => {
-      const existingMedicine: MedicineEntity = {
-        ...mockMedicine,
-        uuid: '123',
-      };
+      const existingMedicine = mockMedicineEntity({ uuid: '123' });
       const dto: UpdateMedicineDto = {
         name: 'novo nome',
       };
-      const conflictingMedicine: MedicineEntity = {
-        ...mockMedicine,
-        uuid: '456',
-        name: 'novo nome',
-      };
+      const conflictingMedicine = mockMedicineEntity({ uuid: '456', name: 'novo nome' });
 
       mockMedicineRepository.findOne.mockResolvedValueOnce(existingMedicine);
       mockMedicineRepository.findOne.mockResolvedValueOnce(conflictingMedicine);
@@ -241,10 +227,7 @@ describe('MedicinesService', () => {
     });
 
     it('should update medicine without changing brand', async () => {
-      const existingMedicine: MedicineEntity = {
-        ...mockMedicine,
-        uuid: '123',
-      };
+      const existingMedicine = mockMedicineEntity({ uuid: '123' });
       const dto: UpdateMedicineDto = {
         name: 'novo nome',
         description: 'nova descrição',
@@ -267,16 +250,8 @@ describe('MedicinesService', () => {
     });
 
     it('should update medicine and change brand', async () => {
-      const existingMedicine: MedicineEntity = {
-        ...mockMedicine,
-        uuid: '123',
-      };
-      const newBrand: MedicineBrandEntity = {
-        uuid: 'brand-uuid-456',
-        name: 'Nova Marca',
-        createdAt: new Date('2024-01-10'),
-        updatedAt: new Date('2024-01-10'),
-      };
+      const existingMedicine = mockMedicineEntity({ uuid: '123' });
+      const newBrand = mockMedicineBrandEntity({ uuid: 'brand-uuid-456', name: 'Nova Marca' });
       const dto: UpdateMedicineDto = {
         name: 'novo nome',
         medicineBrandUuid: 'brand-uuid-456',
@@ -301,10 +276,7 @@ describe('MedicinesService', () => {
     });
 
     it('should not change brand if medicineBrandUuid is the same', async () => {
-      const existingMedicine: MedicineEntity = {
-        ...mockMedicine,
-        uuid: '123',
-      };
+      const existingMedicine = mockMedicineEntity({ uuid: '123' });
       const dto: UpdateMedicineDto = {
         name: 'novo nome',
         medicineBrandUuid: existingMedicine.medicineBrand.uuid,
@@ -333,10 +305,7 @@ describe('MedicinesService', () => {
     });
 
     it('should activate medicine if it is inactive', async () => {
-      const inactiveMedicine: MedicineEntity = {
-        ...mockMedicine,
-        isActive: false,
-      };
+      const inactiveMedicine = mockMedicineEntity({ isActive: false });
 
       mockMedicineRepository.findOneBy.mockResolvedValueOnce(inactiveMedicine);
       mockMedicineRepository.save.mockResolvedValueOnce({
@@ -354,10 +323,7 @@ describe('MedicinesService', () => {
     });
 
     it('should return medicine without changes if already active', async () => {
-      const activeMedicine: MedicineEntity = {
-        ...mockMedicine,
-        isActive: true,
-      };
+      const activeMedicine = mockMedicineEntity({ isActive: true });
 
       mockMedicineRepository.findOneBy.mockResolvedValueOnce(activeMedicine);
 
@@ -380,10 +346,7 @@ describe('MedicinesService', () => {
     });
 
     it('should deactivate medicine if it is active', async () => {
-      const activeMedicine: MedicineEntity = {
-        ...mockMedicine,
-        isActive: true,
-      };
+      const activeMedicine = mockMedicineEntity({ isActive: true });
 
       mockMedicineRepository.findOneBy.mockResolvedValueOnce(activeMedicine);
       mockMedicineRepository.save.mockResolvedValueOnce({
@@ -401,10 +364,7 @@ describe('MedicinesService', () => {
     });
 
     it('should return medicine without changes if already inactive', async () => {
-      const inactiveMedicine: MedicineEntity = {
-        ...mockMedicine,
-        isActive: false,
-      };
+      const inactiveMedicine = mockMedicineEntity({ isActive: false });
 
       mockMedicineRepository.findOneBy.mockResolvedValueOnce(inactiveMedicine);
 
@@ -425,6 +385,7 @@ describe('MedicinesService', () => {
     });
 
     it('should remove medicine', async () => {
+      const mockMedicine = mockMedicineEntity();
       mockMedicineRepository.findOneBy.mockResolvedValueOnce(mockMedicine);
       mockMedicineRepository.remove.mockResolvedValueOnce(mockMedicine);
 

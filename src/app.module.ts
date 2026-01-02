@@ -7,6 +7,7 @@ import { BearerAuthGuard } from './guards';
 import { AnimalsModule } from './modules/animals/animals.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
+import { MedicineApplicationsModule } from './modules/medicine-applications/medicine-applications.module';
 import { MedicineBrandsModule } from './modules/medicine-brands/medicine-brands.module';
 import { MedicinesModule } from './modules/medicines/medicines.module';
 import { UsersModule } from './modules/users/users.module';
@@ -21,6 +22,7 @@ import { UsersModule } from './modules/users/users.module';
     AnimalsModule,
     MedicineBrandsModule,
     MedicinesModule,
+    MedicineApplicationsModule,
   ],
   controllers: [],
   providers: [

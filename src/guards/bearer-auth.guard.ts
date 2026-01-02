@@ -1,6 +1,7 @@
 import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
+import { UserEntity } from 'src/modules/users/entities/user.entity';
 import { IS_PUBLIC_ROUTE_KEY } from '../decorators';
 import { Environment } from '../utils';
 
@@ -22,8 +23,7 @@ export class BearerAuthGuard extends AuthGuard('jwt') {
     return super.canActivate(context);
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: Required 'any' type due to AuthGuard generic signature.
-  handleRequest(err: any, user: any) {
+  handleRequest<TUser = UserEntity>(err: unknown, user: TUser) {
     if (err || !user) throw new UnauthorizedException('Invalid bearer token.');
     return user;
   }

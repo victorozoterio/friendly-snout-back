@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { MedicineBrandEntity } from '../medicine-brands/entities/medicine-brand.entity';
-import { MedicineBrandsService } from '../medicine-brands/medicine-brands.service';
+import { MedicineBrandsModule } from '../medicine-brands/medicine-brands.module';
 import { MedicineEntity } from './entities/medicine.entity';
 import { MedicinesController } from './medicines.controller';
 import { MedicinesService } from './medicines.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([MedicineEntity, MedicineBrandEntity])],
+  imports: [TypeOrmModule.forFeature([MedicineEntity]), MedicineBrandsModule],
   controllers: [MedicinesController],
-  providers: [MedicinesService, MedicineBrandsService],
+  providers: [MedicinesService],
+  exports: [MedicinesService],
 })
 export class MedicinesModule {}

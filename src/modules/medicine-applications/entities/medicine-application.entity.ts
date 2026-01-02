@@ -1,7 +1,7 @@
 import { AnimalEntity } from 'src/modules/animals/entities/animal.entity';
+import { MedicineApplicationFrequency } from 'src/modules/medicine-applications/utils';
 import { MedicineEntity } from 'src/modules/medicines/entities/medicine.entity';
 import { UserEntity } from 'src/modules/users/entities/user.entity';
-import { Frequency } from 'src/utils';
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('medicine_applications')
@@ -16,13 +16,13 @@ export class MedicineApplicationEntity {
   appliedAt: Date;
 
   @Column({ name: 'next_application_at', type: 'timestamp', nullable: true })
-  nextApplicationAt: Date;
+  nextApplicationAt: Date | null;
 
-  @Column({ name: 'frequency', type: 'enum', enum: Frequency, nullable: true })
-  frequency: Frequency;
+  @Column({ name: 'frequency', type: 'enum', enum: MedicineApplicationFrequency, nullable: true })
+  frequency: MedicineApplicationFrequency | null;
 
   @Column({ name: 'ends_at', type: 'timestamp', nullable: true })
-  endsAt: Date;
+  endsAt: Date | null;
 
   @Column({ name: 'google_calendar_event_id', type: 'varchar', nullable: true })
   googleCalendarEventId: string | null;

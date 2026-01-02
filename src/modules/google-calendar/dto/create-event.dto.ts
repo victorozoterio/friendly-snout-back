@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { Frequency } from 'src/utils';
+import { MedicineApplicationFrequency } from 'src/modules/medicine-applications/utils';
 
 export class CreateEventDto {
   @IsNotEmpty()
@@ -24,7 +24,7 @@ export class CreateEventDto {
   end?: string;
 
   @IsOptional()
-  @IsEnum(Frequency)
-  @ApiProperty({ enum: Frequency })
-  frequency?: Frequency;
+  @IsEnum(MedicineApplicationFrequency)
+  @ApiProperty({ enum: MedicineApplicationFrequency })
+  frequency?: MedicineApplicationFrequency;
 }

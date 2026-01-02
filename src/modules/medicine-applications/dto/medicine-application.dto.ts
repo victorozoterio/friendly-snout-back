@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Frequency } from 'src/utils';
+import { MedicineApplicationFrequency } from 'src/modules/medicine-applications/utils';
 
 export class MedicineApplicationDto {
   @ApiProperty()
@@ -14,8 +14,8 @@ export class MedicineApplicationDto {
   @ApiProperty()
   nextApplicationAt: Date;
 
-  @ApiProperty({ enum: Frequency })
-  frequency: Frequency;
+  @ApiProperty({ enum: MedicineApplicationFrequency })
+  frequency: MedicineApplicationFrequency;
 
   @ApiProperty()
   endsAt: Date;

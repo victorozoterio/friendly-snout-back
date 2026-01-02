@@ -8,8 +8,7 @@ import {
   AnimalSex,
   AnimalSize,
   AnimalSpecies,
-  AnimalStatus,
-} from 'src/utils';
+} from 'src/modules/animals/utils';
 
 export class CreateAnimalDto {
   @IsNotEmpty()
@@ -71,11 +70,6 @@ export class CreateAnimalDto {
   @IsEnum(AnimalFivAndFelv)
   @ApiProperty({ enum: AnimalFivAndFelv })
   felv: AnimalFivAndFelv;
-
-  @IsNotEmpty()
-  @IsEnum(AnimalStatus)
-  @ApiProperty({ enum: AnimalStatus })
-  status: AnimalStatus;
 
   @IsOptional()
   @IsString()

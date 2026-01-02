@@ -6,8 +6,7 @@ import {
   AnimalSex,
   AnimalSize,
   AnimalSpecies,
-  AnimalStatus,
-} from 'src/utils';
+} from 'src/modules/animals/utils';
 
 export const mockCreateAnimalDto = (): CreateAnimalDto => ({
   name: 'Rex',
@@ -22,6 +21,5 @@ export const mockCreateAnimalDto = (): CreateAnimalDto => ({
   castrated: true,
   fiv: AnimalFivAndFelv.NOT_TESTED,
   felv: AnimalFivAndFelv.NOT_TESTED,
-  status: AnimalStatus.QUARANTINE,
   notes: 'Animal resgatado, comportamento dócil e sociável.',
 });

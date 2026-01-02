@@ -6,7 +6,7 @@ import {
   AnimalSize,
   AnimalSpecies,
   AnimalStatus,
-} from 'src/utils';
+} from 'src/modules/animals/utils';
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('animals')
@@ -33,28 +33,28 @@ export class AnimalEntity {
   color: AnimalColor;
 
   @Column({ name: 'birth_date', type: 'timestamp', nullable: true })
-  birthDate: Date;
+  birthDate: Date | null;
 
   @Column({ name: 'microchip', type: 'varchar', nullable: true })
-  microchip: string;
+  microchip: string | null;
 
   @Column({ name: 'rga', type: 'varchar', nullable: true })
-  rga: string;
+  rga: string | null;
 
   @Column({ name: 'castrated', type: 'boolean', nullable: false })
   castrated: boolean;
 
-  @Column({ name: 'fiv', type: 'enum', enum: AnimalFivAndFelv, nullable: true })
+  @Column({ name: 'fiv', type: 'enum', enum: AnimalFivAndFelv, nullable: false })
   fiv: AnimalFivAndFelv;
 
-  @Column({ name: 'felv', type: 'enum', enum: AnimalFivAndFelv, nullable: true })
+  @Column({ name: 'felv', type: 'enum', enum: AnimalFivAndFelv, nullable: false })
   felv: AnimalFivAndFelv;
 
-  @Column({ name: 'status', type: 'enum', enum: AnimalStatus, nullable: false })
+  @Column({ name: 'status', type: 'enum', enum: AnimalStatus, nullable: false, default: AnimalStatus.QUARANTINE })
   status: AnimalStatus;
 
   @Column({ name: 'notes', type: 'text', nullable: true })
-  notes: string;
+  notes: string | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;

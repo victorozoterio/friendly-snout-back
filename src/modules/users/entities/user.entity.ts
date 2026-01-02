@@ -15,10 +15,10 @@ export class UserEntity {
   password: string;
 
   @Column({ name: 'reset_code', type: 'varchar', nullable: true })
-  resetCode: string;
+  resetCode: string | null;
 
   @Column({ name: 'reset_code_expires_at', type: 'varchar', nullable: true })
-  resetCodeExpiresAt: string;
+  resetCodeExpiresAt: string | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;

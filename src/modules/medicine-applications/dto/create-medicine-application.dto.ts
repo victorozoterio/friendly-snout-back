@@ -9,7 +9,7 @@ import {
   IsUUID,
   ValidateIf,
 } from 'class-validator';
-import { Frequency } from 'src/utils';
+import { MedicineApplicationFrequency } from 'src/modules/medicine-applications/utils';
 
 export class CreateMedicineApplicationDto {
   @IsNotEmpty()
@@ -40,9 +40,9 @@ export class CreateMedicineApplicationDto {
 
   @ValidateIf((o) => !!o.nextApplicationAt)
   @IsNotEmpty()
-  @IsEnum(Frequency)
-  @ApiProperty({ enum: Frequency })
-  frequency: Frequency;
+  @IsEnum(MedicineApplicationFrequency)
+  @ApiProperty({ enum: MedicineApplicationFrequency })
+  frequency?: MedicineApplicationFrequency;
 
   @IsOptional()
   @IsDateString()

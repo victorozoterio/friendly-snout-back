@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { addHours, endOfDay, format, parseISO } from 'date-fns';
 import { calendar_v3, google } from 'googleapis';
-import { Frequency } from 'src/utils';
+import { MedicineApplicationFrequency } from 'src/modules/medicine-applications/utils';
 import { CreateEventDto } from './dto/create-event.dto';
 
 @Injectable()
@@ -54,7 +54,7 @@ export class GoogleCalendarService {
       },
     };
 
-    if (frequency && frequency !== Frequency.DOES_NOT_REPEAT && endDate) {
+    if (frequency && frequency !== MedicineApplicationFrequency.DOES_NOT_REPEAT && endDate) {
       const recurrenceEndDate = endOfDay(endDate);
       const recurrenceEndRFC = format(recurrenceEndDate, "yyyyMMdd'T'HHmmss'Z'");
 

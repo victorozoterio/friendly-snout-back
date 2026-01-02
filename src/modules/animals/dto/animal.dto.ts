@@ -7,7 +7,7 @@ import {
   AnimalSize,
   AnimalSpecies,
   AnimalStatus,
-} from 'src/utils';
+} from 'src/modules/animals/utils';
 
 export class AnimalDto {
   @ApiProperty()

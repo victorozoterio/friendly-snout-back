@@ -1,4 +1,4 @@
-export enum Frequency {
+export enum MedicineApplicationFrequency {
   DOES_NOT_REPEAT = 'does-not-repeat',
   EVERY_WEEKDAY = 'every-weekday',
   DAILY = 'daily',

@@ -20,7 +20,7 @@ export class MedicineEntity {
   name: string;
 
   @Column({ name: 'description', type: 'varchar', nullable: true })
-  description: string;
+  description: string | null;
 
   @Column({ name: 'quantity', type: 'integer', nullable: false })
   quantity: number;

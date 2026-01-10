@@ -19,23 +19,15 @@ export class MedicineApplicationsService {
   ) {}
 
   async create(user: UserEntity, dto: CreateMedicineApplicationDto) {
-    const AnimalExists = await this.animalsService.findOne(dto.animalUuid);
-    if (!AnimalExists) throw new NotFoundException('Animal does not exist');
+    const animal = await this.animalsService.findOne(dto.animalUuid);
+    const medicine = await this.medicinesService.findOne(dto.medicineUuid);
 
-    const MedicineExists = await this.medicinesService.findOne(dto.medicineUuid);
-    if (!MedicineExists) throw new NotFoundException('Medicine does not exist');
-
-    const medicineApplication = this.repository.create({
-      ...dto,
-      user,
-      animal: AnimalExists,
-      medicine: MedicineExists,
-    });
+    const medicineApplication = this.repository.create({ ...dto, user, animal, medicine });
     const savedMedicineApplication = await this.repository.save(medicineApplication);
 
     if (dto.nextApplicationAt) {
       const event = await this.googleCalendarService.createEvent({
-        summary: `Aplicar ${MedicineExists.name} no ${AnimalExists.name}`,
+        summary: `Aplicar ${medicine.name} no ${animal.name}`,
         start: dto.nextApplicationAt,
         end: dto.endsAt,
         frequency: dto.frequency,

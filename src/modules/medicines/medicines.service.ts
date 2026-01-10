@@ -18,15 +18,12 @@ export class MedicinesService {
   async create(dto: CreateMedicineDto) {
     const quantity = dto.quantity ? dto.quantity : -1;
 
-    const medicineBrandExists = await this.medicineBrandsService.findOne(dto.medicineBrandUuid);
+    const medicineBrand = await this.medicineBrandsService.findOne(dto.medicineBrandUuid);
 
-    const medicineAlreadyExists = await this.repository.findOneBy({
-      name: dto.name,
-      medicineBrand: medicineBrandExists,
-    });
+    const medicineAlreadyExists = await this.repository.findOneBy({ name: dto.name, medicineBrand });
     if (medicineAlreadyExists) throw new ConflictException('Medicine already exists');
 
-    const medicine = this.repository.create({ ...dto, quantity, medicineBrand: medicineBrandExists });
+    const medicine = this.repository.create({ ...dto, quantity, medicineBrand: medicineBrand });
     return this.repository.save(medicine);
   }
 
@@ -49,8 +46,7 @@ export class MedicinesService {
     let medicineBrand: MedicineBrandEntity = medicineExists.medicineBrand;
 
     if (dto.medicineBrandUuid && dto.medicineBrandUuid !== medicineExists.medicineBrand.uuid) {
-      const medicineBrandExists = await this.medicineBrandsService.findOne(dto.medicineBrandUuid);
-      medicineBrand = medicineBrandExists;
+      medicineBrand = await this.medicineBrandsService.findOne(dto.medicineBrandUuid);
     }
 
     const medicineWithSameNameAndBrand = await this.repository.findOne({

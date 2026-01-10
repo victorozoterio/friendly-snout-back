@@ -23,6 +23,12 @@ const envSchema = z.object({
   GOOGLE_CALENDAR_ID: z.string(),
   GOOGLE_SERVICE_ACCOUNT_EMAIL: z.string(),
   GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: z.string(),
+
+  // Cloudflare
+  CLOUDFLARE_ENDPOINT: z.string(),
+  CLOUDFLARE_PUBLIC_URL: z.string(),
+  CLOUDFLARE_ACCESS_KEY_ID: z.string(),
+  CLOUDFLARE_SECRET_ACCESS_KEY: z.string(),
 });
 
 const validate = (config: Record<string, string>) => {

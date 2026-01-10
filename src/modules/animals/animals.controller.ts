@@ -44,7 +44,7 @@ export class AnimalsController {
 
   @Delete(':uuid')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Deletes a animal from the system.' })
+  @ApiOperation({ summary: 'Deletes an animal from the system.' })
   async remove(@Param('uuid', new ParseUUIDPipe()) uuid: string) {
     return await this.animalsService.remove(uuid);
   }

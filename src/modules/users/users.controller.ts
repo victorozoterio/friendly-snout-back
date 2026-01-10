@@ -46,7 +46,7 @@ export class UsersController {
 
   @Delete(':uuid')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Deletes a animal from the system.' })
+  @ApiOperation({ summary: 'Deletes a user from the system.' })
   async remove(@Param('uuid', new ParseUUIDPipe()) uuid: string) {
     return await this.usersService.remove(uuid);
   }

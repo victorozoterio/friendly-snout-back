@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PublicRoute } from 'src/decorators';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -32,7 +32,7 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: 200, type: UserDto })
   @ApiOperation({ summary: 'Retrieves information about a specific user.' })
-  async findOne(@Param('uuid') uuid: string) {
+  async findOne(@Param('uuid', new ParseUUIDPipe()) uuid: string) {
     return await this.usersService.findOne(uuid);
   }
 
@@ -40,14 +40,14 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: 200, type: UserDto })
   @ApiOperation({ summary: 'Updates information of an existing user.' })
-  async update(@Param('uuid') uuid: string, @Body() dto: UpdateUserDto) {
+  async update(@Param('uuid', new ParseUUIDPipe()) uuid: string, @Body() dto: UpdateUserDto) {
     return await this.usersService.update(uuid, dto);
   }
 
   @Delete(':uuid')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Deletes a animal from the system.' })
-  async remove(@Param('uuid') uuid: string) {
+  async remove(@Param('uuid', new ParseUUIDPipe()) uuid: string) {
     return await this.usersService.remove(uuid);
   }
 }

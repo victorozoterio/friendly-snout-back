@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/decorators';
 import { UserEntity } from '../users/entities/user.entity';
@@ -31,14 +31,14 @@ export class MedicineApplicationsController {
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: 200, type: MedicineApplicationDto })
   @ApiOperation({ summary: 'Retrieves information about a specific medicine application.' })
-  async findOne(@Param('uuid') uuid: string) {
+  async findOne(@Param('uuid', new ParseUUIDPipe()) uuid: string) {
     return await this.medicineApplicationsService.findOne(uuid);
   }
 
   @Delete(':uuid')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Deletes a medicine application from the system.' })
-  async remove(@Param('uuid') uuid: string) {
+  async remove(@Param('uuid', new ParseUUIDPipe()) uuid: string) {
     return await this.medicineApplicationsService.remove(uuid);
   }
 }

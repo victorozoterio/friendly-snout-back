@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AnimalsService } from './animals.service';
 import { AnimalDto } from './dto/animal.dto';
@@ -30,7 +30,7 @@ export class AnimalsController {
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: 200, type: AnimalDto })
   @ApiOperation({ summary: 'Retrieves information about a specific animal.' })
-  async findOne(@Param('uuid') uuid: string) {
+  async findOne(@Param('uuid', new ParseUUIDPipe()) uuid: string) {
     return await this.animalsService.findOne(uuid);
   }
 
@@ -38,14 +38,14 @@ export class AnimalsController {
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: 200, type: AnimalDto })
   @ApiOperation({ summary: 'Updates information of an existing animal.' })
-  async update(@Param('uuid') uuid: string, @Body() dto: UpdateAnimalDto) {
+  async update(@Param('uuid', new ParseUUIDPipe()) uuid: string, @Body() dto: UpdateAnimalDto) {
     return await this.animalsService.update(uuid, dto);
   }
 
   @Delete(':uuid')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Deletes a animal from the system.' })
-  async remove(@Param('uuid') uuid: string) {
+  async remove(@Param('uuid', new ParseUUIDPipe()) uuid: string) {
     return await this.animalsService.remove(uuid);
   }
 }

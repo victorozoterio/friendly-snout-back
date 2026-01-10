@@ -48,7 +48,9 @@ async function createEvent(dto: CreateEventDto): Promise<calendar_v3.Schema$Even
     const response = await calendarClient.events.insert({ calendarId, requestBody: event });
     return response.data;
   } catch (error) {
-    throw new Error(`Failed to create event in Google Calendar: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to create event in Google Calendar: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }
 
@@ -59,12 +61,13 @@ async function deleteEvent(eventId: string): Promise<void> {
   try {
     await calendarClient.events.delete({ calendarId, eventId });
   } catch (error) {
-    throw new Error(`Failed to delete event from Google Calendar: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to delete event from Google Calendar: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }
 
 export const googleCalendar = {
-    createEvent,
-    deleteEvent,
-  };
-
+  createEvent,
+  deleteEvent,
+};

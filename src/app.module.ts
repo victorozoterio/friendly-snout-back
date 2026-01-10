@@ -7,7 +7,6 @@ import { BearerAuthGuard } from './guards';
 import { AnimalsModule } from './modules/animals/animals.module';
 import { AttachmentsModule } from './modules/attachments/attachments.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { GoogleCalendarModule } from './modules/google-calendar/google-calendar.module';
 import { HealthModule } from './modules/health/health.module';
 import { MedicineApplicationsModule } from './modules/medicine-applications/medicine-applications.module';
 import { MedicineBrandsModule } from './modules/medicine-brands/medicine-brands.module';
@@ -25,7 +24,6 @@ import { UsersModule } from './modules/users/users.module';
     MedicineBrandsModule,
     MedicinesModule,
     MedicineApplicationsModule,
-    GoogleCalendarModule,
     AttachmentsModule,
   ],
   controllers: [],

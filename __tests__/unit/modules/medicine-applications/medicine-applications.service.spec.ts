@@ -1,8 +1,8 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { googleCalendar } from 'src/lib';
 import { AnimalsService } from 'src/modules/animals/animals.service';
-import { GoogleCalendarService } from 'src/modules/google-calendar/google-calendar.service';
 import { MedicineApplicationEntity } from 'src/modules/medicine-applications/entities/medicine-application.entity';
 import { MedicineApplicationsService } from 'src/modules/medicine-applications/medicine-applications.service';
 import { MedicinesService } from 'src/modules/medicines/medicines.service';
@@ -15,12 +15,18 @@ import {
   mockUserEntity,
 } from '../../mocks';
 
+jest.mock('src/lib', () => ({
+  googleCalendar: {
+    createEvent: jest.fn(),
+    deleteEvent: jest.fn(),
+  },
+}));
+
 describe('MedicineApplicationsService', () => {
   let medicineApplicationsService: MedicineApplicationsService;
   let medicineApplicationRepository: Repository<MedicineApplicationEntity>;
   let animalsService: AnimalsService;
   let medicinesService: MedicinesService;
-  let googleCalendarService: GoogleCalendarService;
 
   const mockMedicineApplicationRepository = {
     findOneBy: jest.fn(),
@@ -36,11 +42,6 @@ describe('MedicineApplicationsService', () => {
 
   const mockMedicinesService = {
     findOne: jest.fn(),
-  };
-
-  const mockGoogleCalendarService = {
-    createEvent: jest.fn(),
-    deleteEvent: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -61,10 +62,6 @@ describe('MedicineApplicationsService', () => {
           provide: MedicinesService,
           useValue: mockMedicinesService,
         },
-        {
-          provide: GoogleCalendarService,
-          useValue: mockGoogleCalendarService,
-        },
       ],
     }).compile();
 
@@ -74,7 +71,6 @@ describe('MedicineApplicationsService', () => {
     );
     animalsService = module.get<AnimalsService>(AnimalsService);
     medicinesService = module.get<MedicinesService>(MedicinesService);
-    googleCalendarService = module.get<GoogleCalendarService>(GoogleCalendarService);
   });
 
   it('should be defined', () => {
@@ -82,7 +78,6 @@ describe('MedicineApplicationsService', () => {
     expect(medicineApplicationRepository).toBeDefined();
     expect(animalsService).toBeDefined();
     expect(medicinesService).toBeDefined();
-    expect(googleCalendarService).toBeDefined();
   });
 
   describe('create', () => {
@@ -118,7 +113,7 @@ describe('MedicineApplicationsService', () => {
         medicine: mockMedicine,
       });
       expect(mockMedicineApplicationRepository.save).toHaveBeenCalledTimes(1);
-      expect(mockGoogleCalendarService.createEvent).not.toHaveBeenCalled();
+      expect(googleCalendar.createEvent).not.toHaveBeenCalled();
       expect(result.googleCalendarEventId).toBeNull();
     });
 
@@ -141,7 +136,7 @@ describe('MedicineApplicationsService', () => {
         ...mockMedicineApplication,
         googleCalendarEventId: 'event-id-123',
       });
-      mockGoogleCalendarService.createEvent.mockResolvedValueOnce(googleCalendarEvent);
+      (googleCalendar.createEvent as jest.Mock).mockResolvedValueOnce(googleCalendarEvent);
 
       const result = await medicineApplicationsService.create(mockUser, dto);
 
@@ -153,7 +148,7 @@ describe('MedicineApplicationsService', () => {
         animal: mockAnimal,
         medicine: mockMedicine,
       });
-      expect(mockGoogleCalendarService.createEvent).toHaveBeenCalledWith({
+      expect(googleCalendar.createEvent).toHaveBeenCalledWith({
         summary: `Aplicar ${mockMedicine.name} no ${mockAnimal.name}`,
         start: dto.nextApplicationAt,
         end: dto.endsAt,
@@ -182,11 +177,11 @@ describe('MedicineApplicationsService', () => {
         ...mockMedicineApplication,
         googleCalendarEventId: null,
       });
-      mockGoogleCalendarService.createEvent.mockResolvedValueOnce(googleCalendarEvent);
+      (googleCalendar.createEvent as jest.Mock).mockResolvedValueOnce(googleCalendarEvent);
 
       const result = await medicineApplicationsService.create(mockUser, dto);
 
-      expect(mockGoogleCalendarService.createEvent).toHaveBeenCalled();
+      expect(googleCalendar.createEvent).toHaveBeenCalled();
       expect(mockMedicineApplicationRepository.save).toHaveBeenCalledTimes(2);
       expect(result.googleCalendarEventId).toBeNull();
     });
@@ -279,7 +274,7 @@ describe('MedicineApplicationsService', () => {
       );
 
       expect(mockMedicineApplicationRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
-      expect(mockGoogleCalendarService.deleteEvent).not.toHaveBeenCalled();
+      expect(googleCalendar.deleteEvent).not.toHaveBeenCalled();
       expect(mockMedicineApplicationRepository.remove).not.toHaveBeenCalled();
     });
 
@@ -294,7 +289,7 @@ describe('MedicineApplicationsService', () => {
       await medicineApplicationsService.remove('123');
 
       expect(mockMedicineApplicationRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
-      expect(mockGoogleCalendarService.deleteEvent).not.toHaveBeenCalled();
+      expect(googleCalendar.deleteEvent).not.toHaveBeenCalled();
       expect(mockMedicineApplicationRepository.remove).toHaveBeenCalledWith(medicineApplicationWithoutEvent);
     });
 
@@ -304,13 +299,13 @@ describe('MedicineApplicationsService', () => {
       });
 
       mockMedicineApplicationRepository.findOneBy.mockResolvedValueOnce(medicineApplicationWithEvent);
-      mockGoogleCalendarService.deleteEvent.mockResolvedValueOnce(undefined);
+      (googleCalendar.deleteEvent as jest.Mock).mockResolvedValueOnce(undefined);
       mockMedicineApplicationRepository.remove.mockResolvedValueOnce(medicineApplicationWithEvent);
 
       await medicineApplicationsService.remove('123');
 
       expect(mockMedicineApplicationRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
-      expect(mockGoogleCalendarService.deleteEvent).toHaveBeenCalledWith('event-id-123');
+      expect(googleCalendar.deleteEvent).toHaveBeenCalledWith('event-id-123');
       expect(mockMedicineApplicationRepository.remove).toHaveBeenCalledWith(medicineApplicationWithEvent);
     });
   });

@@ -1,0 +1,5 @@
+export const GOOGLE_CALENDAR = {
+  CALENDAR_ID: process.env.GOOGLE_CALENDAR_ID as string,
+  SERVICE_ACCOUNT_EMAIL: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL as string,
+  SERVICE_ACCOUNT_PRIVATE_KEY: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY as string,
+} as const;

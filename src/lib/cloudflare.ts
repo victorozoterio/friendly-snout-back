@@ -2,11 +2,6 @@ import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getS3Client } from '../config/cloudflare';
 import { CLOUDFLARE } from '../constants';
 
-export const cloudflare = {
-  uploadFile,
-  deleteFile,
-};
-
 async function uploadFile(animalUuid: string, file: Express.Multer.File): Promise<string> {
   const s3Client = getS3Client();
   const fileName = `${animalUuid}/${file.originalname}`;
@@ -42,3 +37,8 @@ async function deleteFile(fileUrl: string): Promise<void> {
     throw new Error(`Failed to delete file from Cloudflare R2: ${error.message}`);
   }
 }
+
+export const cloudflare = {
+  uploadFile,
+  deleteFile,
+};

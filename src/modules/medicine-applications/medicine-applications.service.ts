@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { googleCalendar } from 'src/lib';
 import { Repository } from 'typeorm';
 import { AnimalsService } from '../animals/animals.service';
-import { GoogleCalendarService } from '../google-calendar/google-calendar.service';
 import { MedicinesService } from '../medicines/medicines.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { CreateMedicineApplicationDto } from './dto/create-medicine-application.dto';
@@ -13,7 +13,6 @@ export class MedicineApplicationsService {
   constructor(
     private readonly animalsService: AnimalsService,
     private readonly medicinesService: MedicinesService,
-    private readonly googleCalendarService: GoogleCalendarService,
     @InjectRepository(MedicineApplicationEntity)
     private readonly repository: Repository<MedicineApplicationEntity>,
   ) {}
@@ -26,7 +25,7 @@ export class MedicineApplicationsService {
     const savedMedicineApplication = await this.repository.save(medicineApplication);
 
     if (dto.nextApplicationAt) {
-      const event = await this.googleCalendarService.createEvent({
+      const event = await googleCalendar.createEvent({
         summary: `Aplicar ${medicine.name} no ${animal.name}`,
         start: dto.nextApplicationAt,
         end: dto.endsAt,
@@ -56,7 +55,7 @@ export class MedicineApplicationsService {
     if (!medicineApplicationExists) throw new NotFoundException('Medicine application does not exist');
 
     if (medicineApplicationExists.googleCalendarEventId) {
-      await this.googleCalendarService.deleteEvent(medicineApplicationExists.googleCalendarEventId);
+      await googleCalendar.deleteEvent(medicineApplicationExists.googleCalendarEventId);
     }
 
     await this.repository.remove(medicineApplicationExists);

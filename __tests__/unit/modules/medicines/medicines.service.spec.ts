@@ -69,7 +69,7 @@ describe('MedicinesService', () => {
       const mockMedicine = mockMedicineEntity();
 
       mockMedicineBrandsService.findOne.mockResolvedValueOnce(mockMedicineBrand);
-      mockMedicineRepository.findOneBy.mockResolvedValueOnce(null);
+      mockMedicineRepository.findOne.mockResolvedValueOnce(null);
       mockMedicineRepository.create.mockReturnValueOnce({
         ...mockMedicine,
         quantity: 5,
@@ -82,9 +82,8 @@ describe('MedicinesService', () => {
       const result = await medicinesService.create(dto);
 
       expect(mockMedicineBrandsService.findOne).toHaveBeenCalledWith(dto.medicineBrandUuid);
-      expect(mockMedicineRepository.findOneBy).toHaveBeenCalledWith({
-        name: dto.name,
-        medicineBrand: mockMedicineBrand,
+      expect(mockMedicineRepository.findOne).toHaveBeenCalledWith({
+        where: { name: dto.name, medicineBrand: { uuid: dto.medicineBrandUuid } },
       });
       expect(mockMedicineRepository.create).toHaveBeenCalledWith({
         ...dto,
@@ -106,7 +105,7 @@ describe('MedicinesService', () => {
       const mockMedicine = mockMedicineEntity();
 
       mockMedicineBrandsService.findOne.mockResolvedValueOnce(mockMedicineBrand);
-      mockMedicineRepository.findOneBy.mockResolvedValueOnce(null);
+      mockMedicineRepository.findOne.mockResolvedValueOnce(null);
       mockMedicineRepository.create.mockReturnValueOnce({
         ...mockMedicine,
         quantity: -1,
@@ -138,14 +137,13 @@ describe('MedicinesService', () => {
       const mockMedicine = mockMedicineEntity();
 
       mockMedicineBrandsService.findOne.mockResolvedValueOnce(mockMedicineBrand);
-      mockMedicineRepository.findOneBy.mockResolvedValueOnce(mockMedicine);
+      mockMedicineRepository.findOne.mockResolvedValueOnce(mockMedicine);
 
       await expect(medicinesService.create(dto)).rejects.toThrow(new ConflictException('Medicine already exists'));
 
       expect(mockMedicineBrandsService.findOne).toHaveBeenCalledWith(dto.medicineBrandUuid);
-      expect(mockMedicineRepository.findOneBy).toHaveBeenCalledWith({
-        name: dto.name,
-        medicineBrand: mockMedicineBrand,
+      expect(mockMedicineRepository.findOne).toHaveBeenCalledWith({
+        where: { name: dto.name, medicineBrand: { uuid: dto.medicineBrandUuid } },
       });
     });
   });
@@ -180,7 +178,7 @@ describe('MedicinesService', () => {
       const result = await medicinesService.findOne('123');
 
       expect(mockMedicineRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
-      expect(result).toBe(mockMedicine);
+      expect(result).toEqual(mockMedicine);
     });
   });
 
@@ -306,19 +304,15 @@ describe('MedicinesService', () => {
 
     it('should activate medicine if it is inactive', async () => {
       const inactiveMedicine = mockMedicineEntity({ isActive: false });
+      const activatedMedicine = { ...inactiveMedicine, isActive: true };
 
       mockMedicineRepository.findOneBy.mockResolvedValueOnce(inactiveMedicine);
-      mockMedicineRepository.save.mockResolvedValueOnce({
-        ...inactiveMedicine,
-        isActive: true,
-      });
+      mockMedicineRepository.save.mockResolvedValueOnce(activatedMedicine);
 
       const result = await medicinesService.activate('123');
 
-      expect(mockMedicineRepository.save).toHaveBeenCalledWith({
-        ...inactiveMedicine,
-        isActive: true,
-      });
+      expect(mockMedicineRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
+      expect(mockMedicineRepository.save).toHaveBeenCalledWith(activatedMedicine);
       expect(result.isActive).toBe(true);
     });
 
@@ -347,19 +341,15 @@ describe('MedicinesService', () => {
 
     it('should deactivate medicine if it is active', async () => {
       const activeMedicine = mockMedicineEntity({ isActive: true });
+      const deactivatedMedicine = { ...activeMedicine, isActive: false };
 
       mockMedicineRepository.findOneBy.mockResolvedValueOnce(activeMedicine);
-      mockMedicineRepository.save.mockResolvedValueOnce({
-        ...activeMedicine,
-        isActive: false,
-      });
+      mockMedicineRepository.save.mockResolvedValueOnce(deactivatedMedicine);
 
       const result = await medicinesService.deactivate('123');
 
-      expect(mockMedicineRepository.save).toHaveBeenCalledWith({
-        ...activeMedicine,
-        isActive: false,
-      });
+      expect(mockMedicineRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
+      expect(mockMedicineRepository.save).toHaveBeenCalledWith(deactivatedMedicine);
       expect(result.isActive).toBe(false);
     });
 
@@ -370,6 +360,7 @@ describe('MedicinesService', () => {
 
       const result = await medicinesService.deactivate('123');
 
+      expect(mockMedicineRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
       expect(mockMedicineRepository.save).not.toHaveBeenCalled();
       expect(result.isActive).toBe(false);
     });

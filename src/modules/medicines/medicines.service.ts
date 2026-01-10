@@ -20,7 +20,9 @@ export class MedicinesService {
 
     const medicineBrand = await this.medicineBrandsService.findOne(dto.medicineBrandUuid);
 
-    const medicineAlreadyExists = await this.repository.findOneBy({ name: dto.name, medicineBrand });
+    const medicineAlreadyExists = await this.repository.findOne({
+      where: { name: dto.name, medicineBrand: { uuid: dto.medicineBrandUuid } },
+    });
     if (medicineAlreadyExists) throw new ConflictException('Medicine already exists');
 
     const medicine = this.repository.create({ ...dto, quantity, medicineBrand: medicineBrand });

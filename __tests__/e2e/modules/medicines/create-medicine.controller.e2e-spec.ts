@@ -1,7 +1,6 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from 'src/app.module';
-import { TypeOrmExceptionFilter } from 'src/utils';
 import type { Response } from 'supertest';
 import request from 'supertest';
 
@@ -19,7 +18,6 @@ describe('MedicinesController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }));
-    app.useGlobalFilters(new TypeOrmExceptionFilter());
     await app.init();
 
     // Setup: Criar usuário

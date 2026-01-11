@@ -9,7 +9,7 @@ import {
   AnimalStatus,
 } from 'src/modules/animals/utils';
 
-export const mockAnimalEntity = (): AnimalEntity => ({
+export const mockAnimalEntity = (overrides?: Partial<AnimalEntity>): AnimalEntity => ({
   uuid: '123',
   name: 'Rex',
   sex: AnimalSex.MALE,
@@ -27,4 +27,5 @@ export const mockAnimalEntity = (): AnimalEntity => ({
   notes: 'Animal resgatado, comportamento dócil e sociável.',
   createdAt: new Date('2024-01-10'),
   updatedAt: new Date('2024-01-10'),
+  ...overrides,
 });

@@ -1,10 +1,10 @@
 import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
-import { getS3Client } from '../config/cloudflare';
+import { getS3Client } from '../config';
 import { CLOUDFLARE } from '../constants';
 
-async function uploadFile(animalUuid: string, file: Express.Multer.File): Promise<string> {
+async function uploadFile(path: string, file: Express.Multer.File): Promise<string> {
   const s3Client = getS3Client();
-  const fileName = `${animalUuid}/${file.originalname}`;
+  const fileName = `${path}/${file.originalname}`;
 
   const command = new PutObjectCommand({
     Bucket: CLOUDFLARE.BUCKET_NAME,

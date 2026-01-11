@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { randomUUID } from 'node:crypto';
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
-import { buildOptions } from '../src/config/database';
+import { buildOptions } from '../src/config';
 import { Environment } from '../src/utils';
 
 process.env.NODE_ENV = Environment.PRD;

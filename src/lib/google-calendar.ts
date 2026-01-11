@@ -1,6 +1,6 @@
 import { addHours, endOfDay, format, parseISO } from 'date-fns';
 import { calendar_v3 } from 'googleapis';
-import { getCalendarClient, getCalendarId } from '../config/google-calendar';
+import { getCalendarClient, getCalendarId } from '../config';
 import { MedicineApplicationFrequency } from '../modules/medicine-applications/utils';
 
 export interface CreateEventDto {

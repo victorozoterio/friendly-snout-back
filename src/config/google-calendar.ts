@@ -1,5 +1,5 @@
 import { calendar_v3, google } from 'googleapis';
-import { GOOGLE_CALENDAR } from '../constants';
+import { GOOGLE_CALENDAR } from '../constants/google-calendar.constants';
 
 export const getCalendarClient = (): calendar_v3.Calendar => {
   const privateKey = Buffer.from(GOOGLE_CALENDAR.SERVICE_ACCOUNT_PRIVATE_KEY, 'base64').toString('utf8');

@@ -4,7 +4,7 @@ import * as path from 'node:path';
 import 'reflect-metadata';
 import 'tsconfig-paths/register';
 import { DataSource, DataSourceOptions } from 'typeorm';
-import { DATABASE } from '../constants';
+import { DATABASE } from '../constants/database.constants';
 
 export const buildOptions = (): DataSourceOptions => {
   const base: DataSourceOptions = {

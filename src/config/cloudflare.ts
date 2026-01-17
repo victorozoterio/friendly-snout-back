@@ -1,5 +1,5 @@
 import { S3Client } from '@aws-sdk/client-s3';
-import { CLOUDFLARE } from '../constants';
+import { CLOUDFLARE } from '../constants/cloudflare.constants';
 
 export const getS3Client = (): S3Client => {
   return new S3Client({

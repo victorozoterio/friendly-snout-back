@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { UserEntity } from '../users/entities/user.entity';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { JwtPayload } from './types/jwt-payload.type';
 
 @Injectable()
 export class AuthService {
@@ -30,7 +31,14 @@ export class AuthService {
   }
 
   async refreshToken(dto: RefreshTokenDto) {
-    const payload = this.jwtService.decode(dto.refreshToken);
+    let payload: JwtPayload;
+
+    try {
+      payload = this.jwtService.verify(dto.refreshToken);
+    } catch (_error) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+
     if (payload.type !== 'refresh') throw new UnauthorizedException('Invalid token type');
 
     const user = await this.userRepository.findOneBy({ uuid: payload.sub });

@@ -7,9 +7,10 @@ import {
   AnimalSpecies,
   AnimalStatus,
 } from 'src/modules/animals/utils';
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('animals')
+@Index(['species', 'status'])
 export class AnimalEntity {
   @PrimaryGeneratedColumn('uuid', { name: 'uuid' })
   uuid: string;

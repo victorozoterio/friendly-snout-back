@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateAnimalDto } from './dto/create-animal.dto';
 import { UpdateAnimalDto } from './dto/update-animal.dto';
 import { AnimalEntity } from './entities/animal.entity';
+import { AnimalSpecies, AnimalStatus } from './utils';
 
 @Injectable()
 export class AnimalsService {
@@ -19,6 +20,38 @@ export class AnimalsService {
 
   async findAll() {
     return this.repository.find();
+  }
+
+  async totalPerStage() {
+    const rows = await this.repository
+      .createQueryBuilder('a')
+      .select('a.status', 'status')
+      .addSelect('a.species', 'species')
+      .addSelect('COUNT(*)', 'count')
+      .where('a.status IN (:...statuses)', {
+        statuses: [AnimalStatus.QUARANTINE, AnimalStatus.SHELTERED, AnimalStatus.ADOPTED],
+      })
+      .andWhere('a.species IN (:...species)', {
+        species: [AnimalSpecies.DOG, AnimalSpecies.CAT],
+      })
+      .groupBy('a.status')
+      .addGroupBy('a.species')
+      .getRawMany();
+
+    const get = (status: AnimalStatus, species: AnimalSpecies) =>
+      Number(rows.find((r) => r.status === status && r.species === species)?.count ?? 0);
+
+    const build = (status: AnimalStatus) => {
+      const dogs = get(status, AnimalSpecies.DOG);
+      const cats = get(status, AnimalSpecies.CAT);
+      return { dogs, cats, total: dogs + cats };
+    };
+
+    return {
+      quarantine: build(AnimalStatus.QUARANTINE),
+      sheltered: build(AnimalStatus.SHELTERED),
+      adopted: build(AnimalStatus.ADOPTED),
+    };
   }
 
   async findOne(uuid: string) {

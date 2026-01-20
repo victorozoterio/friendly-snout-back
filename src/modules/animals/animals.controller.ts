@@ -3,6 +3,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AnimalsService } from './animals.service';
 import { AnimalDto } from './dto/animal.dto';
 import { CreateAnimalDto } from './dto/create-animal.dto';
+import { TotalAnimalsPerStageDto } from './dto/total-animal-per-stage.dto';
 import { UpdateAnimalDto } from './dto/update-animal.dto';
 
 @ApiTags('Animals')
@@ -26,7 +27,15 @@ export class AnimalsController {
     return await this.animalsService.findAll();
   }
 
-  @Get(':uuid')
+  @Get('/total-per-stage')
+  @HttpCode(HttpStatus.OK)
+  @ApiResponse({ status: 200, type: TotalAnimalsPerStageDto })
+  @ApiOperation({ summary: 'Retrieves the total number of animals in each stage.' })
+  async totalPerStage() {
+    return await this.animalsService.totalPerStage();
+  }
+
+  @Get('/:uuid')
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: 200, type: AnimalDto })
   @ApiOperation({ summary: 'Retrieves information about a specific animal.' })
@@ -34,7 +43,7 @@ export class AnimalsController {
     return await this.animalsService.findOne(uuid);
   }
 
-  @Patch(':uuid')
+  @Patch('/:uuid')
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: 200, type: AnimalDto })
   @ApiOperation({ summary: 'Updates information of an existing animal.' })
@@ -42,7 +51,7 @@ export class AnimalsController {
     return await this.animalsService.update(uuid, dto);
   }
 
-  @Delete(':uuid')
+  @Delete('/:uuid')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Deletes an animal from the system.' })
   async remove(@Param('uuid', new ParseUUIDPipe()) uuid: string) {

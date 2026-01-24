@@ -1,8 +1,8 @@
 export enum MedicineApplicationFrequency {
-  DOES_NOT_REPEAT = 'does-not-repeat',
-  EVERY_WEEKDAY = 'every-weekday',
-  DAILY = 'daily',
-  WEEKLY = 'weekly',
-  MONTHLY = 'monthly',
-  YEARLY = 'yearly',
+  DOES_NOT_REPEAT = 'não se repete',
+  EVERY_WEEKDAY = 'todos os dias da semana',
+  DAILY = 'diário',
+  WEEKLY = 'semanal',
+  MONTHLY = 'mensal',
+  YEARLY = 'anual',
 }

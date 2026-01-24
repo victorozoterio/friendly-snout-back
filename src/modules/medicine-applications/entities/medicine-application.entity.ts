@@ -1,5 +1,4 @@
 import { AnimalEntity } from 'src/modules/animals/entities/animal.entity';
-import { MedicineApplicationFrequency } from 'src/modules/medicine-applications/utils';
 import { MedicineEntity } from 'src/modules/medicines/entities/medicine.entity';
 import { UserEntity } from 'src/modules/users/entities/user.entity';
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
@@ -18,8 +17,8 @@ export class MedicineApplicationEntity {
   @Column({ name: 'next_application_at', type: 'timestamp', nullable: true })
   nextApplicationAt: Date | null;
 
-  @Column({ name: 'frequency', type: 'enum', enum: MedicineApplicationFrequency, nullable: true })
-  frequency: MedicineApplicationFrequency | null;
+  @Column({ name: 'frequency', type: 'varchar', nullable: true })
+  frequency: string | null;
 
   @Column({ name: 'ends_at', type: 'timestamp', nullable: true })
   endsAt: Date | null;

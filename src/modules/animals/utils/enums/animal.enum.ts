@@ -1,58 +1,59 @@
 export enum AnimalSex {
-  MALE = 'male',
-  FEMALE = 'female',
+  MALE = 'macho',
+  FEMALE = 'fêmea',
 }
 
 export enum AnimalSpecies {
-  DOG = 'dog',
-  CAT = 'cat',
+  DOG = 'cachorro',
+  CAT = 'gato',
 }
 
 export enum AnimalBreed {
-  MIXED_BREED = 'mixed-breed',
-  SHIH_TZU = 'shih-tzu',
-  YORKSHIRE_TERRIER = 'yorkshire-terrier',
-  GERMAN_SPITZ = 'german-spitz',
-  FRENCH_BULLDOG = 'french-bulldog',
-  POODLE = 'poodle',
-  LHASA_APSO = 'lhasa-apso',
-  GOLDEN_RETRIEVER = 'golden-retriever',
-  ROTTWEILER = 'rottweiler',
-  LABRADOR_RETRIEVER = 'labrador-retriever',
-  PUG = 'pug',
-  GERMAN_SHEPHERD = 'german-shepherd',
-  BORDER_COLLIE = 'border-collie',
-  LONG_HAIRED_CHIHUAHUA = 'long-haired-chihuahua',
-  BELGIAN_MALINOIS = 'belgian-malinois',
-  MALTESE = 'maltese',
+  MIXED_BREED = 'S.R.D.',
+  SHIH_TZU = 'Shih Tzu',
+  YORKSHIRE = 'Yorkshire',
+  GERMAN_SPITZ = 'Spitz Alemão',
+  FRENCH_BULLDOG = 'Bulldog Francês',
+  POODLE = 'Poodle',
+  LHASA_APSO = 'Lhasa Apso',
+  GOLDEN = 'Golden',
+  ROTTWEILER = 'Rottweiler',
+  LABRADOR = 'Labrador',
+  PUG = 'Pug',
+  GERMAN_SHEPHERD = 'Pastor Alemão',
+  BORDER_COLLIE = 'Border Collie',
+  LONG = 'Chihuahua',
+  BELGIAN = 'Pastor Belga Malinois',
+  SIBERIAN_HUSKY = 'Husky Siberiano',
+  MALTESE = 'Maltês',
 }
 
 export enum AnimalSize {
-  SMALL = 'small',
-  MEDIUM = 'medium',
-  LARGE = 'large',
+  SMALL = 'pequeno',
+  MEDIUM = 'médio',
+  LARGE = 'grande',
 }
 
 export enum AnimalColor {
-  BLACK = 'black',
-  WHITE = 'white',
-  GRAY = 'gray',
-  BROWN = 'brown',
-  GOLDEN = 'golden',
-  CREAM = 'cream',
-  TAN = 'tan',
-  SPECKLED = 'speckled',
+  BLACK = 'preto',
+  WHITE = 'branco',
+  GRAY = 'cinza',
+  BROWN = 'marrom',
+  GOLDEN = 'dourado',
+  CREAM = 'creme',
+  TAN = 'caramelo',
+  SPECKLED = 'malhado',
 }
 
 export enum AnimalFivAndFelv {
-  YES = 'yes',
-  NO = 'no',
-  NOT_TESTED = 'not-tested',
+  YES = 'sim',
+  NO = 'não',
+  NOT_TESTED = 'não testado',
 }
 
 export enum AnimalStatus {
-  QUARANTINE = 'quarantine',
-  SHELTERED = 'sheltered',
-  ADOPTED = 'adopted',
-  LOST = 'lost',
+  QUARANTINE = 'quarentena',
+  SHELTERED = 'acolhido',
+  ADOPTED = 'adotado',
+  LOST = 'perdido',
 }

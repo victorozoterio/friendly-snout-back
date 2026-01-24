@@ -1,12 +1,4 @@
-import {
-  AnimalBreed,
-  AnimalColor,
-  AnimalFivAndFelv,
-  AnimalSex,
-  AnimalSize,
-  AnimalSpecies,
-  AnimalStatus,
-} from 'src/modules/animals/utils';
+import { AnimalStatus } from 'src/modules/animals/utils';
 import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('animals')
@@ -18,20 +10,20 @@ export class AnimalEntity {
   @Column({ name: 'name', type: 'varchar', nullable: false })
   name: string;
 
-  @Column({ name: 'sex', type: 'enum', enum: AnimalSex, nullable: false })
-  sex: AnimalSex;
+  @Column({ name: 'sex', type: 'varchar', nullable: false })
+  sex: string;
 
-  @Column({ name: 'species', type: 'enum', enum: AnimalSpecies, nullable: false })
-  species: AnimalSpecies;
+  @Column({ name: 'species', type: 'varchar', nullable: false })
+  species: string;
 
-  @Column({ name: 'breed', type: 'enum', enum: AnimalBreed, nullable: false })
-  breed: AnimalBreed;
+  @Column({ name: 'breed', type: 'varchar', nullable: false })
+  breed: string;
 
-  @Column({ name: 'size', type: 'enum', enum: AnimalSize, nullable: false })
-  size: AnimalSize;
+  @Column({ name: 'size', type: 'varchar', nullable: false })
+  size: string;
 
-  @Column({ name: 'color', type: 'enum', enum: AnimalColor, nullable: false })
-  color: AnimalColor;
+  @Column({ name: 'color', type: 'varchar', nullable: false })
+  color: string;
 
   @Column({ name: 'birth_date', type: 'timestamp', nullable: true })
   birthDate: Date | null;
@@ -45,14 +37,14 @@ export class AnimalEntity {
   @Column({ name: 'castrated', type: 'boolean', nullable: false })
   castrated: boolean;
 
-  @Column({ name: 'fiv', type: 'enum', enum: AnimalFivAndFelv, nullable: false })
-  fiv: AnimalFivAndFelv;
+  @Column({ name: 'fiv', type: 'varchar', nullable: false })
+  fiv: string;
 
-  @Column({ name: 'felv', type: 'enum', enum: AnimalFivAndFelv, nullable: false })
-  felv: AnimalFivAndFelv;
+  @Column({ name: 'felv', type: 'varchar', nullable: false })
+  felv: string;
 
-  @Column({ name: 'status', type: 'enum', enum: AnimalStatus, nullable: false, default: AnimalStatus.QUARANTINE })
-  status: AnimalStatus;
+  @Column({ name: 'status', type: 'varchar', nullable: false, default: AnimalStatus.QUARANTINE })
+  status: string;
 
   @Column({ name: 'notes', type: 'text', nullable: true })
   notes: string | null;

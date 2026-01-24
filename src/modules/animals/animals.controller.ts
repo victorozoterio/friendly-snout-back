@@ -1,8 +1,10 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { AnimalsService } from './animals.service';
 import { AnimalDto } from './dto/animal.dto';
 import { CreateAnimalDto } from './dto/create-animal.dto';
+import { PaginatedAnimalsDto } from './dto/paginated-animals.dto';
 import { TotalAnimalsPerStageDto } from './dto/total-animal-per-stage.dto';
 import { UpdateAnimalDto } from './dto/update-animal.dto';
 
@@ -21,10 +23,10 @@ export class AnimalsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  @ApiResponse({ status: 200, type: AnimalDto, isArray: true })
-  @ApiOperation({ summary: 'Retrieves information about all animals.' })
-  async findAll() {
-    return await this.animalsService.findAll();
+  @ApiResponse({ status: 200, type: PaginatedAnimalsDto })
+  @ApiOperation({ summary: 'Retrieves a paginated list of animals.' })
+  async findAll(@Paginate() query: PaginateQuery) {
+    return await this.animalsService.findAll(query);
   }
 
   @Get('/total-per-stage')

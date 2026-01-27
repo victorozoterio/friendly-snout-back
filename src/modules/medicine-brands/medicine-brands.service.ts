@@ -1,5 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { FilterOperator, PaginateConfig, PaginateQuery, paginate } from 'nestjs-paginate';
 import { Repository } from 'typeorm';
 import { CreateMedicineBrandDto } from './dto/create-medicine-brand.dto';
 import { UpdateMedicineBrandDto } from './dto/update-medicine-brand.dto';
@@ -20,8 +21,19 @@ export class MedicineBrandsService {
     return this.repository.save(medicineBrand);
   }
 
-  async findAll() {
-    return this.repository.find();
+  async findAll(query: PaginateQuery) {
+    const config: PaginateConfig<MedicineBrandEntity> = {
+      sortableColumns: ['createdAt', 'name'],
+      defaultSortBy: [['createdAt', 'DESC']],
+      defaultLimit: 10,
+      maxLimit: 100,
+      searchableColumns: ['name'],
+      filterableColumns: {
+        name: [FilterOperator.ILIKE],
+      },
+    };
+
+    return paginate(query, this.repository, config);
   }
 
   async findOne(uuid: string) {

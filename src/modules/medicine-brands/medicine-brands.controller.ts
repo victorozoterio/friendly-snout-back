@@ -1,7 +1,9 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { CreateMedicineBrandDto } from './dto/create-medicine-brand.dto';
 import { MedicineBrandDto } from './dto/medicine-brand.dto';
+import { PaginatedMedicineBrandsDto } from './dto/paginated-medicine-brand.dto';
 import { UpdateMedicineBrandDto } from './dto/update-medicine-brand.dto';
 import { MedicineBrandsService } from './medicine-brands.service';
 
@@ -20,10 +22,10 @@ export class MedicineBrandsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  @ApiResponse({ status: 200, type: MedicineBrandDto, isArray: true })
-  @ApiOperation({ summary: 'Retrieves information about all medicine brands.' })
-  async findAll() {
-    return await this.medicineBrandsService.findAll();
+  @ApiResponse({ status: 200, type: PaginatedMedicineBrandsDto })
+  @ApiOperation({ summary: 'Retrieves a paginated list of medicine brands.' })
+  async findAll(@Paginate() query: PaginateQuery) {
+    return await this.medicineBrandsService.findAll(query);
   }
 
   @Get(':uuid')
@@ -34,7 +36,7 @@ export class MedicineBrandsController {
     return await this.medicineBrandsService.findOne(uuid);
   }
 
-  @Patch(':uuid')
+  @Put(':uuid')
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: 200, type: MedicineBrandDto })
   @ApiOperation({ summary: 'Updates information of an existing medicine brand.' })

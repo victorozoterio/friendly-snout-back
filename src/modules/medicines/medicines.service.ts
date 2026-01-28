@@ -33,7 +33,7 @@ export class MedicinesService {
 
   async findAll(query: PaginateQuery) {
     const config: PaginateConfig<MedicineEntity> = {
-      sortableColumns: ['createdAt', 'name', 'quantity', 'isActive'],
+      sortableColumns: ['createdAt', 'name', 'quantity'],
       defaultSortBy: [['createdAt', 'DESC']],
       defaultLimit: 10,
       maxLimit: 100,

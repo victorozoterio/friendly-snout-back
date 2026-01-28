@@ -2,6 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, PaginateConfig, PaginateQuery, paginate } from 'nestjs-paginate';
 import { Repository } from 'typeorm';
+import { MedicineApplicationEntity } from '../medicine-applications/entities/medicine-application.entity';
 import { MedicineBrandEntity } from '../medicine-brands/entities/medicine-brand.entity';
 import { MedicineBrandsService } from '../medicine-brands/medicine-brands.service';
 import { CreateMedicineDto } from './dto/create-medicine.dto';
@@ -12,6 +13,8 @@ import { MedicineEntity } from './entities/medicine.entity';
 export class MedicinesService {
   constructor(
     private readonly medicineBrandsService: MedicineBrandsService,
+    @InjectRepository(MedicineApplicationEntity)
+    private readonly medicineApplicationEntity: Repository<MedicineApplicationEntity>,
     @InjectRepository(MedicineEntity)
     private readonly repository: Repository<MedicineEntity>,
   ) {}
@@ -98,6 +101,11 @@ export class MedicinesService {
   async remove(uuid: string) {
     const medicineExists = await this.repository.findOneBy({ uuid });
     if (!medicineExists) throw new NotFoundException('Medicine does not exist');
+
+    const applicationsMadeWithThisMedicine = await this.medicineApplicationEntity.count({
+      where: { medicine: { uuid } },
+    });
+    if (applicationsMadeWithThisMedicine > 0) throw new ConflictException('Applications were made with this medicine');
 
     await this.repository.remove(medicineExists);
   }

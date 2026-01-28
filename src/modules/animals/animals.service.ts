@@ -21,7 +21,7 @@ export class AnimalsService {
 
   async findAll(query: PaginateQuery) {
     const config: PaginateConfig<AnimalEntity> = {
-      sortableColumns: ['createdAt', 'name', 'species', 'breed', 'size', 'castrated', 'fiv', 'felv', 'status'],
+      sortableColumns: ['createdAt', 'name', 'species', 'breed', 'size', 'status'],
       defaultSortBy: [['createdAt', 'DESC']],
       defaultLimit: 10,
       maxLimit: 100,

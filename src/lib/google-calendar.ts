@@ -35,11 +35,22 @@ async function createEvent(dto: CreateEventDto): Promise<calendar_v3.Schema$Even
     },
   };
 
+  const medicineFrequencyToGoogleRRule: Record<MedicineApplicationFrequency, string> = {
+    [MedicineApplicationFrequency.DAILY]: 'DAILY',
+    [MedicineApplicationFrequency.WEEKLY]: 'WEEKLY',
+    [MedicineApplicationFrequency.MONTHLY]: 'MONTHLY',
+    [MedicineApplicationFrequency.YEARLY]: 'YEARLY',
+    [MedicineApplicationFrequency.EVERY_WEEKDAY]: 'WEEKLY;BYDAY=MO,TU,WE,TH,FR',
+    [MedicineApplicationFrequency.DOES_NOT_REPEAT]: '',
+  };
+
   if (frequency && frequency !== MedicineApplicationFrequency.DOES_NOT_REPEAT && endDate) {
     const recurrenceEndDate = endOfDay(endDate);
     const recurrenceEndRFC = format(recurrenceEndDate, "yyyyMMdd'T'HHmmss'Z'");
 
-    event.recurrence = [`RRULE:FREQ=${frequency.toUpperCase()};UNTIL=${recurrenceEndRFC}`];
+    const googleFreq = medicineFrequencyToGoogleRRule[frequency as MedicineApplicationFrequency];
+
+    event.recurrence = [`RRULE:FREQ=${googleFreq};UNTIL=${recurrenceEndRFC}`];
   }
 
   try {

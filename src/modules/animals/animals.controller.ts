@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { AnimalsService } from './animals.service';
@@ -45,7 +45,7 @@ export class AnimalsController {
     return await this.animalsService.findOne(uuid);
   }
 
-  @Put('/:uuid')
+  @Patch('/:uuid')
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: 200, type: AnimalDto })
   @ApiOperation({ summary: 'Updates information of an existing animal.' })

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { CreateMedicineBrandDto } from './dto/create-medicine-brand.dto';
@@ -36,7 +36,7 @@ export class MedicineBrandsController {
     return await this.medicineBrandsService.findOne(uuid);
   }
 
-  @Put(':uuid')
+  @Patch(':uuid')
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: 200, type: MedicineBrandDto })
   @ApiOperation({ summary: 'Updates information of an existing medicine brand.' })

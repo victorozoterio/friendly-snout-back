@@ -1,23 +1,13 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Put,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { CreateMedicineDto } from './dto/create-medicine.dto';
 import { MedicineDto } from './dto/medicine.dto';
+import { PaginatedMedicineDto } from './dto/paginated-medicine.dto';
 import { UpdateMedicineDto } from './dto/update-medicine.dto';
 import { MedicinesService } from './medicines.service';
 
-@ApiTags('Medicine Brands')
+@ApiTags('Medicines')
 @Controller('medicines')
 export class MedicinesController {
   constructor(private readonly medicinesService: MedicinesService) {}
@@ -32,10 +22,10 @@ export class MedicinesController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  @ApiResponse({ status: 200, type: MedicineDto, isArray: true })
-  @ApiOperation({ summary: 'Retrieves information about all medicines.' })
-  async findAll() {
-    return await this.medicinesService.findAll();
+  @ApiResponse({ status: 200, type: PaginatedMedicineDto })
+  @ApiOperation({ summary: 'Retrieves a paginated list of medicines.' })
+  async findAll(@Paginate() query: PaginateQuery) {
+    return await this.medicinesService.findAll(query);
   }
 
   @Get(':uuid')
@@ -46,7 +36,7 @@ export class MedicinesController {
     return await this.medicinesService.findOne(uuid);
   }
 
-  @Patch(':uuid/active')
+  @Patch(':uuid/activate')
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: 200, type: MedicineDto })
   @ApiOperation({ summary: 'Activates an existing medicine.' })
@@ -62,7 +52,7 @@ export class MedicinesController {
     return await this.medicinesService.deactivate(uuid);
   }
 
-  @Put(':uuid')
+  @Patch(':uuid')
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: 200, type: MedicineDto })
   @ApiOperation({ summary: 'Updates information of an existing medicine.' })

@@ -1,5 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { FilterOperator, PaginateConfig, PaginateQuery, paginate } from 'nestjs-paginate';
 import { Repository } from 'typeorm';
 import { MedicineBrandEntity } from '../medicine-brands/entities/medicine-brand.entity';
 import { MedicineBrandsService } from '../medicine-brands/medicine-brands.service';
@@ -16,8 +17,6 @@ export class MedicinesService {
   ) {}
 
   async create(dto: CreateMedicineDto) {
-    const quantity = dto.quantity ? dto.quantity : -1;
-
     const medicineBrand = await this.medicineBrandsService.findOne(dto.medicineBrandUuid);
 
     const medicineAlreadyExists = await this.repository.findOne({
@@ -25,16 +24,27 @@ export class MedicinesService {
     });
     if (medicineAlreadyExists) throw new ConflictException('Medicine already exists');
 
-    const medicine = this.repository.create({ ...dto, quantity, medicineBrand: medicineBrand });
+    const medicine = this.repository.create({ ...dto, medicineBrand: medicineBrand });
     return this.repository.save(medicine);
   }
 
-  async findAll() {
-    return this.repository.find({ relations: ['medicineBrand'] });
+  async findAll(query: PaginateQuery) {
+    const config: PaginateConfig<MedicineEntity> = {
+      sortableColumns: ['createdAt', 'name', 'quantity', 'isActive'],
+      defaultSortBy: [['createdAt', 'DESC']],
+      defaultLimit: 10,
+      maxLimit: 100,
+      searchableColumns: ['name'],
+      filterableColumns: {
+        name: [FilterOperator.ILIKE],
+      },
+    };
+
+    return paginate(query, this.repository, config);
   }
 
   async findOne(uuid: string) {
-    const medicineExists = await this.repository.findOneBy({ uuid });
+    const medicineExists = await this.repository.findOne({ where: { uuid }, relations: ['medicineBrand'] });
     if (!medicineExists) throw new NotFoundException('Medicine does not exist');
 
     return medicineExists;

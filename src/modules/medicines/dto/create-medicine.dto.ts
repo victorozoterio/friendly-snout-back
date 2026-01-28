@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateMedicineDto {
   @IsNotEmpty()
@@ -14,11 +14,11 @@ export class CreateMedicineDto {
   @ApiProperty()
   description?: string;
 
-  @IsOptional()
+  @IsNotEmpty()
+  @Min(-1)
   @IsNumber()
-  @IsPositive()
   @ApiProperty()
-  quantity?: number;
+  quantity: number;
 
   @IsNotEmpty()
   @IsString()

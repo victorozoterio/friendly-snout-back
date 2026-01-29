@@ -12,8 +12,9 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { AttachmentsService } from './attachments.service';
-import { AttachmentDto } from './dto/attachment.dto';
+import { PaginatedAttachmentDto } from './dto/paginated-medicine.dto';
 import { FileValidationPipe } from './pipes/file-validation.pipe';
 
 const TEN_MEGABYTES = 10 * 1024 * 1024;
@@ -24,6 +25,7 @@ export class AttachmentsController {
   constructor(private readonly attachmentsService: AttachmentsService) {}
 
   @Post('animal/:animalUuid')
+  @HttpCode(HttpStatus.CREATED)
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: TEN_MEGABYTES } }))
   @ApiOperation({ summary: 'Uploads a new file for a specific animal to Google Drive and returns the file URL.' })
@@ -37,10 +39,14 @@ export class AttachmentsController {
   }
 
   @Get('by-animal/:animalUuid')
-  @ApiOperation({ summary: 'Retrieves all attachments for a specific animal.' })
-  @ApiResponse({ status: 200, type: AttachmentDto, isArray: true })
-  async findAllByAnimal(@Param('animalUuid', new ParseUUIDPipe()) animalUuid: string) {
-    return await this.attachmentsService.findAllByAnimal(animalUuid);
+  @HttpCode(HttpStatus.OK)
+  @ApiResponse({ status: 200, type: PaginatedAttachmentDto })
+  @ApiOperation({ summary: 'Retrieves a paginated list of attachments for a specific animal.' })
+  async findAllByAnimal(
+    @Param('animalUuid', new ParseUUIDPipe()) animalUuid: string,
+    @Paginate() query: PaginateQuery,
+  ) {
+    return await this.attachmentsService.findAllByAnimal(animalUuid, query);
   }
 
   @Delete(':uuid')

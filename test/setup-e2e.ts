@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { randomUUID } from 'node:crypto';
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';

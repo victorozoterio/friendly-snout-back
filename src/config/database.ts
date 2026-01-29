@@ -1,8 +1,8 @@
-import { TypeOrmModuleAsyncOptions, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import 'dotenv/config';
 import * as path from 'node:path';
 import 'reflect-metadata';
 import 'tsconfig-paths/register';
+
+import { TypeOrmModuleAsyncOptions, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { DATABASE } from '../constants/database.constants';
 

@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { FilterOperator, PaginateConfig, PaginateQuery, paginate } from 'nestjs-paginate';
 import { googleCalendar } from 'src/lib';
 import { Repository } from 'typeorm';
 import { AnimalsService } from '../animals/animals.service';
@@ -17,8 +18,8 @@ export class MedicineApplicationsService {
     private readonly repository: Repository<MedicineApplicationEntity>,
   ) {}
 
-  async create(user: UserEntity, dto: CreateMedicineApplicationDto) {
-    const animal = await this.animalsService.findOne(dto.animalUuid);
+  async create(animalUuid: string, dto: CreateMedicineApplicationDto, user: UserEntity) {
+    const animal = await this.animalsService.findOne(animalUuid);
     const medicine = await this.medicinesService.findOne(dto.medicineUuid);
 
     const medicineApplication = this.repository.create({ ...dto, user, animal, medicine });
@@ -39,15 +40,20 @@ export class MedicineApplicationsService {
     return savedMedicineApplication;
   }
 
-  async findAll() {
-    return this.repository.find();
-  }
+  async findAllByAnimal(animalUuid: string, query: PaginateQuery) {
+    const config: PaginateConfig<MedicineApplicationEntity> = {
+      sortableColumns: ['createdAt', 'medicine', 'quantity', 'frequency', 'appliedAt', 'endsAt'],
+      defaultSortBy: [['createdAt', 'DESC']],
+      defaultLimit: 10,
+      maxLimit: 100,
+      relations: ['medicine'],
+      searchableColumns: ['medicine.name'],
+      filterableColumns: {
+        'medicine.name': [FilterOperator.ILIKE],
+      },
+    };
 
-  async findOne(uuid: string) {
-    const medicineApplicationExists = await this.repository.findOneBy({ uuid });
-    if (!medicineApplicationExists) throw new NotFoundException('Medicine application does not exist');
-
-    return medicineApplicationExists;
+    return paginate(query, this.repository, { ...config, where: { animal: { uuid: animalUuid } } });
   }
 
   async remove(uuid: string) {

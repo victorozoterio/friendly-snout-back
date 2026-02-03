@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, PaginateConfig, PaginateQuery, paginate } from 'nestjs-paginate';
 import { googleCalendar } from 'src/lib';
@@ -22,8 +22,13 @@ export class MedicineApplicationsService {
     const animal = await this.animalsService.findOne(animalUuid);
     const medicine = await this.medicinesService.findOne(dto.medicineUuid);
 
+    const medicineHasInfiniteQuantity = medicine.quantity === -1;
+    const medicineHasEnoughQuantity = !medicineHasInfiniteQuantity && dto.quantity <= medicine.quantity;
+    if (!medicineHasEnoughQuantity) throw new BadRequestException('Insufficient medicine quantity');
+
     const medicineApplication = this.repository.create({ ...dto, user, animal, medicine });
     const savedMedicineApplication = await this.repository.save(medicineApplication);
+    await this.medicinesService.update(dto.medicineUuid, { quantity: medicine.quantity - dto.quantity });
 
     if (dto.nextApplicationAt) {
       const event = await googleCalendar.createEvent({
@@ -57,11 +62,19 @@ export class MedicineApplicationsService {
   }
 
   async remove(uuid: string) {
-    const medicineApplicationExists = await this.repository.findOneBy({ uuid });
+    const medicineApplicationExists = await this.repository.findOne({ where: { uuid }, relations: ['medicine'] });
     if (!medicineApplicationExists) throw new NotFoundException('Medicine application does not exist');
 
     if (medicineApplicationExists.googleCalendarEventId) {
       await googleCalendar.deleteEvent(medicineApplicationExists.googleCalendarEventId);
+    }
+
+    const medicine = medicineApplicationExists.medicine;
+    const medicineHasInfiniteQuantity = medicine.quantity === -1;
+    if (!medicineHasInfiniteQuantity) {
+      await this.medicinesService.update(medicine.uuid, {
+        quantity: medicine.quantity + medicineApplicationExists.quantity,
+      });
     }
 
     await this.repository.remove(medicineApplicationExists);

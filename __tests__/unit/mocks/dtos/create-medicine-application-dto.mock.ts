@@ -4,7 +4,6 @@ import { MedicineApplicationFrequency } from 'src/modules/medicine-applications/
 export const mockCreateMedicineApplicationDto = (
   overrides?: Partial<CreateMedicineApplicationDto>,
 ): CreateMedicineApplicationDto => ({
-  animalUuid: 'animal-uuid-123',
   medicineUuid: 'medicine-uuid-123',
   quantity: 1,
   appliedAt: '2024-01-10T10:00:00Z',

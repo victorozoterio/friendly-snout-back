@@ -15,11 +15,6 @@ export class CreateMedicineApplicationDto {
   @IsNotEmpty()
   @IsUUID()
   @ApiProperty()
-  animalUuid: string;
-
-  @IsNotEmpty()
-  @IsUUID()
-  @ApiProperty()
   medicineUuid: string;
 
   @IsNotEmpty()

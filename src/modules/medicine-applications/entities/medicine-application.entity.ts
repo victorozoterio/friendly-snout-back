@@ -11,16 +11,16 @@ export class MedicineApplicationEntity {
   @Column({ name: 'quantity', type: 'integer', nullable: false })
   quantity: number;
 
-  @Column({ name: 'applied_at', type: 'timestamp', nullable: false })
+  @Column({ name: 'applied_at', type: 'timestamptz', nullable: false })
   appliedAt: Date;
 
-  @Column({ name: 'next_application_at', type: 'timestamp', nullable: true })
+  @Column({ name: 'next_application_at', type: 'timestamptz', nullable: true })
   nextApplicationAt: Date | null;
 
   @Column({ name: 'frequency', type: 'varchar', nullable: true })
   frequency: string | null;
 
-  @Column({ name: 'ends_at', type: 'timestamp', nullable: true })
+  @Column({ name: 'ends_at', type: 'timestamptz', nullable: true })
   endsAt: Date | null;
 
   @Column({ name: 'google_calendar_event_id', type: 'varchar', nullable: true })

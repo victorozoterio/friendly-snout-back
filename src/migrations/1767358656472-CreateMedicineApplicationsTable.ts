@@ -4,8 +4,18 @@ export class CreateMedicineApplicationsTable1767358656472 implements MigrationIn
   name = 'CreateMedicineApplicationsTable1767358656472';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
+      CREATE TYPE "medicine_applications_frequency_enum" AS ENUM (
+        'does-not-repeat',
+        'every-weekday',
+        'daily',
+        'weekly',
+        'monthly',
+        'yearly'
+      )
+    `);
     await queryRunner.query(
-      `CREATE TABLE "medicine_applications" ("uuid" uuid NOT NULL DEFAULT uuid_generate_v4(), "quantity" integer NOT NULL, "applied_at" TIMESTAMP NOT NULL, "next_application_at" TIMESTAMP, "frequency" "public"."medicine_applications_frequency_enum", "ends_at" TIMESTAMP, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "animal_uuid" uuid, "medicine_uuid" uuid, "user_uuid" uuid, CONSTRAINT "PK_ed03625ae568f55ac2353d365fd" PRIMARY KEY ("uuid"))`,
+      `CREATE TABLE "medicine_applications" ("uuid" uuid NOT NULL DEFAULT uuid_generate_v4(), "quantity" integer NOT NULL, "applied_at" TIMESTAMP NOT NULL, "next_application_at" TIMESTAMP, "frequency" "medicine_applications_frequency_enum", "ends_at" TIMESTAMP, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "animal_uuid" uuid, "medicine_uuid" uuid, "user_uuid" uuid, CONSTRAINT "PK_ed03625ae568f55ac2353d365fd" PRIMARY KEY ("uuid"))`,
     );
     await queryRunner.query(
       `ALTER TABLE "medicine_applications" ADD CONSTRAINT "FK_2af76aedb43a4d3a9aa69225ae0" FOREIGN KEY ("animal_uuid") REFERENCES "animals"("uuid") ON DELETE NO ACTION ON UPDATE NO ACTION`,

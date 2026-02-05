@@ -17,7 +17,7 @@ export const buildOptions = (): DataSourceOptions => {
     database: DATABASE.NAME,
     entities: [path.join(__dirname, '/../modules/**/**/*.entity{.ts,.js}')],
     migrations: [path.join(__dirname, '/../migrations/*{.ts,.js}')],
-    migrationsRun: false,
+    migrationsRun: true,
     synchronize: false,
     logging: false,
   };

@@ -12,7 +12,7 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "dotenvx run -- node dist/main",
+    "start:prod": "dotenvx run --env-file=.env.prd -- node dist/src/main.js",
     "test": "jest --selectProjects unit",
     "test:watch": "jest --selectProjects unit --watch",
     "test:coverage": "jest --selectProjects unit --coverage",
@@ -20,7 +20,6 @@
     "test:e2e:watch": "jest --selectProjects e2e --watch",
     "typeorm": "typeorm-ts-node-commonjs -d src/config/database.ts",
     "migration:generate": "npm run typeorm -- migration:generate src/migrations/MigrationName",
-    "migration:run": "npm run typeorm -- migration:run",
     "migration:revert": "npm run typeorm -- migration:revert",
     "migration:show": "npm run typeorm -- migration:show"
   },

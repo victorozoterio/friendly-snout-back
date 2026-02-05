@@ -23,7 +23,7 @@ export class MedicineApplicationsService {
     const medicine = await this.medicinesService.findOne(dto.medicineUuid);
 
     const medicineHasInfiniteQuantity = medicine.quantity === -1;
-    const medicineHasEnoughQuantity = !medicineHasInfiniteQuantity && dto.quantity <= medicine.quantity;
+    const medicineHasEnoughQuantity = medicineHasInfiniteQuantity || dto.quantity <= medicine.quantity;
     if (!medicineHasEnoughQuantity) throw new BadRequestException('Insufficient medicine quantity');
 
     const medicineApplication = this.repository.create({ ...dto, user, animal, medicine });

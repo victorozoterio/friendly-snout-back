@@ -17,6 +17,7 @@ const envSchema = z.object({
   DB_PASSWORD: z.string(),
 
   // Keys
+  X_API_KEY: z.string(),
   JWT_SECRET_KEY: z.string(),
 
   // Google Calendar

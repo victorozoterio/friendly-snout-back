@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { databaseConfig, envConfig } from './config';
 import { BearerAuthGuard } from './guards';
+import { XApiKeyMiddleware } from './middlewares';
 import { AnimalsModule } from './modules/animals/animals.module';
 import { AttachmentsModule } from './modules/attachments/attachments.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -34,4 +35,8 @@ import { UsersModule } from './modules/users/users.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(XApiKeyMiddleware).exclude('health').forRoutes('*');
+  }
+}

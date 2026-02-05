@@ -1,11 +1,12 @@
 import 'dotenv/config';
 import * as path from 'node:path';
 import 'reflect-metadata';
-import 'tsconfig-paths/register';
 
 import { TypeOrmModuleAsyncOptions, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { DATABASE } from '../constants/database.constants';
+
+const rootDir = path.resolve(__dirname, '..');
 
 export const buildOptions = (): DataSourceOptions => {
   const base: DataSourceOptions = {
@@ -15,8 +16,8 @@ export const buildOptions = (): DataSourceOptions => {
     username: DATABASE.USERNAME,
     password: DATABASE.PASSWORD,
     database: DATABASE.NAME,
-    entities: [path.join(__dirname, '/../modules/**/**/*.entity{.ts,.js}')],
-    migrations: [path.join(__dirname, '/../migrations/*{.ts,.js}')],
+    entities: [path.join(rootDir, '**', '*.entity.{js,ts}')],
+    migrations: [path.join(rootDir, 'migrations', '*.{js,ts}')],
     migrationsRun: true,
     synchronize: false,
     logging: false,

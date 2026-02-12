@@ -22,6 +22,7 @@ export class AttachmentEntity {
   @ManyToOne(
     () => AnimalEntity,
     (animal) => animal.uuid,
+    { onDelete: 'CASCADE' },
   )
   @JoinColumn({ name: 'animal_uuid', referencedColumnName: 'uuid' })
   animal: AnimalEntity;

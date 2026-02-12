@@ -12,7 +12,7 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "dotenvx run --env-file=.env.prd -- node dist/src/main.js",
+    "start:prod": "dotenvx run --env-file=.env.prd -- node -r tsconfig-paths/register dist/src/main.js",
     "test": "jest --selectProjects unit",
     "test:watch": "jest --selectProjects unit --watch",
     "test:coverage": "jest --selectProjects unit --coverage",
@@ -49,6 +49,7 @@
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "tsconfig-paths": "^4.2.0",
     "typeorm": "^0.3.27",
     "zod": "^4.1.12"
   },

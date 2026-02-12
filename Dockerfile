@@ -26,6 +26,8 @@ ENV NODE_OPTIONS="--max-old-space-size=512"
 RUN corepack enable
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/tsconfig.json ./tsconfig.json
+COPY --from=build /app/tsconfig.build.json ./tsconfig.build.json
 COPY --from=build /app/package.json ./
 COPY --from=build /app/.env.prd ./.env.prd
 

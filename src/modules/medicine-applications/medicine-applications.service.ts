@@ -28,7 +28,10 @@ export class MedicineApplicationsService {
 
     const medicineApplication = this.repository.create({ ...dto, user, animal, medicine });
     const savedMedicineApplication = await this.repository.save(medicineApplication);
-    await this.medicinesService.update(dto.medicineUuid, { quantity: medicine.quantity - dto.quantity });
+
+    if (!medicineHasInfiniteQuantity) {
+      await this.medicinesService.update(dto.medicineUuid, { quantity: medicine.quantity - dto.quantity });
+    }
 
     if (dto.nextApplicationAt) {
       const event = await googleCalendar.createEvent({

@@ -71,10 +71,8 @@ async function deleteEvent(eventId: string): Promise<void> {
 
   try {
     await calendarClient.events.delete({ calendarId, eventId });
-  } catch (error) {
-    throw new Error(
-      `Failed to delete event from Google Calendar: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    );
+  } catch (_error) {
+    return;
   }
 }
 

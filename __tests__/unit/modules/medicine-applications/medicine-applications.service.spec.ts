@@ -1,6 +1,7 @@
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { paginate } from 'nestjs-paginate';
 import { googleCalendar } from 'src/lib';
 import { AnimalsService } from 'src/modules/animals/animals.service';
 import { MedicineApplicationEntity } from 'src/modules/medicine-applications/entities/medicine-application.entity';
@@ -22,6 +23,14 @@ jest.mock('src/lib', () => ({
   },
 }));
 
+jest.mock('nestjs-paginate', () => {
+  const actual = jest.requireActual('nestjs-paginate');
+  return {
+    ...actual,
+    paginate: jest.fn(),
+  };
+});
+
 describe('MedicineApplicationsService', () => {
   let medicineApplicationsService: MedicineApplicationsService;
   let medicineApplicationRepository: Repository<MedicineApplicationEntity>;
@@ -30,6 +39,7 @@ describe('MedicineApplicationsService', () => {
 
   const mockMedicineApplicationRepository = {
     findOneBy: jest.fn(),
+    findOne: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
     find: jest.fn(),
@@ -42,6 +52,7 @@ describe('MedicineApplicationsService', () => {
 
   const mockMedicinesService = {
     findOne: jest.fn(),
+    update: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -82,6 +93,7 @@ describe('MedicineApplicationsService', () => {
 
   describe('create', () => {
     it('should create medicine application without Google Calendar event', async () => {
+      const animalUuid = 'animal-uuid-123';
       const dto = mockCreateMedicineApplicationDto({
         nextApplicationAt: undefined,
         frequency: undefined,
@@ -89,7 +101,7 @@ describe('MedicineApplicationsService', () => {
       });
       const mockUser = mockUserEntity();
       const mockAnimal = mockAnimalEntity();
-      const mockMedicine = mockMedicineEntity();
+      const mockMedicine = mockMedicineEntity({ quantity: 10 });
       const mockMedicineApplication = mockMedicineApplicationEntity({
         nextApplicationAt: null,
         frequency: null,
@@ -102,9 +114,9 @@ describe('MedicineApplicationsService', () => {
       mockMedicineApplicationRepository.create.mockReturnValueOnce(mockMedicineApplication);
       mockMedicineApplicationRepository.save.mockResolvedValueOnce(mockMedicineApplication);
 
-      const result = await medicineApplicationsService.create(mockUser, dto);
+      const result = await medicineApplicationsService.create(animalUuid, dto, mockUser);
 
-      expect(mockAnimalsService.findOne).toHaveBeenCalledWith(dto.animalUuid);
+      expect(mockAnimalsService.findOne).toHaveBeenCalledWith(animalUuid);
       expect(mockMedicinesService.findOne).toHaveBeenCalledWith(dto.medicineUuid);
       expect(mockMedicineApplicationRepository.create).toHaveBeenCalledWith({
         ...dto,
@@ -113,15 +125,19 @@ describe('MedicineApplicationsService', () => {
         medicine: mockMedicine,
       });
       expect(mockMedicineApplicationRepository.save).toHaveBeenCalledTimes(1);
+      expect(mockMedicinesService.update).toHaveBeenCalledWith(dto.medicineUuid, {
+        quantity: mockMedicine.quantity - dto.quantity,
+      });
       expect(googleCalendar.createEvent).not.toHaveBeenCalled();
       expect(result.googleCalendarEventId).toBeNull();
     });
 
     it('should create medicine application with Google Calendar event', async () => {
+      const animalUuid = 'animal-uuid-123';
       const dto = mockCreateMedicineApplicationDto();
       const mockUser = mockUserEntity();
       const mockAnimal = mockAnimalEntity();
-      const mockMedicine = mockMedicineEntity();
+      const mockMedicine = mockMedicineEntity({ quantity: 10 });
       const mockMedicineApplication = mockMedicineApplicationEntity();
 
       const googleCalendarEvent = {
@@ -138,9 +154,9 @@ describe('MedicineApplicationsService', () => {
       });
       (googleCalendar.createEvent as jest.Mock).mockResolvedValueOnce(googleCalendarEvent);
 
-      const result = await medicineApplicationsService.create(mockUser, dto);
+      const result = await medicineApplicationsService.create(animalUuid, dto, mockUser);
 
-      expect(mockAnimalsService.findOne).toHaveBeenCalledWith(dto.animalUuid);
+      expect(mockAnimalsService.findOne).toHaveBeenCalledWith(animalUuid);
       expect(mockMedicinesService.findOne).toHaveBeenCalledWith(dto.medicineUuid);
       expect(mockMedicineApplicationRepository.create).toHaveBeenCalledWith({
         ...dto,
@@ -155,14 +171,18 @@ describe('MedicineApplicationsService', () => {
         frequency: dto.frequency,
       });
       expect(mockMedicineApplicationRepository.save).toHaveBeenCalledTimes(2);
+      expect(mockMedicinesService.update).toHaveBeenCalledWith(dto.medicineUuid, {
+        quantity: mockMedicine.quantity - dto.quantity,
+      });
       expect(result.googleCalendarEventId).toBe('event-id-123');
     });
 
     it('should create medicine application with Google Calendar event that returns null id', async () => {
+      const animalUuid = 'animal-uuid-123';
       const dto = mockCreateMedicineApplicationDto();
       const mockUser = mockUserEntity();
       const mockAnimal = mockAnimalEntity();
-      const mockMedicine = mockMedicineEntity();
+      const mockMedicine = mockMedicineEntity({ quantity: 10 });
       const mockMedicineApplication = mockMedicineApplicationEntity();
 
       const googleCalendarEvent = {
@@ -179,101 +199,144 @@ describe('MedicineApplicationsService', () => {
       });
       (googleCalendar.createEvent as jest.Mock).mockResolvedValueOnce(googleCalendarEvent);
 
-      const result = await medicineApplicationsService.create(mockUser, dto);
+      const result = await medicineApplicationsService.create(animalUuid, dto, mockUser);
 
       expect(googleCalendar.createEvent).toHaveBeenCalled();
       expect(mockMedicineApplicationRepository.save).toHaveBeenCalledTimes(2);
+      expect(mockMedicinesService.update).toHaveBeenCalledWith(dto.medicineUuid, {
+        quantity: mockMedicine.quantity - dto.quantity,
+      });
       expect(result.googleCalendarEventId).toBeNull();
     });
 
-    it('should throw NotFoundException if animal does not exist', async () => {
+    it('should not decrement stock when medicine has infinite quantity (-1)', async () => {
+      const animalUuid = 'animal-uuid-123';
       const dto = mockCreateMedicineApplicationDto({
         nextApplicationAt: undefined,
         frequency: undefined,
         endsAt: undefined,
       });
-      const mockUser = mockMedicineApplicationEntity().user;
+      const mockUser = mockUserEntity();
+      const mockAnimal = mockAnimalEntity();
+      const mockMedicine = mockMedicineEntity({ quantity: -1 });
+      const mockMedicineApplication = mockMedicineApplicationEntity({
+        nextApplicationAt: null,
+        frequency: null,
+        endsAt: null,
+        googleCalendarEventId: null,
+      });
+
+      mockAnimalsService.findOne.mockResolvedValueOnce(mockAnimal);
+      mockMedicinesService.findOne.mockResolvedValueOnce(mockMedicine);
+      mockMedicineApplicationRepository.create.mockReturnValueOnce(mockMedicineApplication);
+      mockMedicineApplicationRepository.save.mockResolvedValueOnce(mockMedicineApplication);
+
+      await medicineApplicationsService.create(animalUuid, dto, mockUser);
+
+      expect(mockMedicinesService.update).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException when medicine quantity is insufficient', async () => {
+      const animalUuid = 'animal-uuid-123';
+      const dto = mockCreateMedicineApplicationDto({
+        quantity: 10,
+        nextApplicationAt: undefined,
+        frequency: undefined,
+        endsAt: undefined,
+      });
+      const mockUser = mockUserEntity();
+      const mockAnimal = mockAnimalEntity();
+      const mockMedicine = mockMedicineEntity({ quantity: 5 });
+
+      mockAnimalsService.findOne.mockResolvedValueOnce(mockAnimal);
+      mockMedicinesService.findOne.mockResolvedValueOnce(mockMedicine);
+
+      await expect(medicineApplicationsService.create(animalUuid, dto, mockUser)).rejects.toThrow(
+        new BadRequestException('Insufficient medicine quantity'),
+      );
+
+      expect(mockMedicineApplicationRepository.create).not.toHaveBeenCalled();
+      expect(mockMedicinesService.update).not.toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException if animal does not exist', async () => {
+      const animalUuid = 'animal-uuid-123';
+      const dto = mockCreateMedicineApplicationDto({
+        nextApplicationAt: undefined,
+        frequency: undefined,
+        endsAt: undefined,
+      });
+      const mockUser = mockUserEntity();
 
       mockAnimalsService.findOne.mockRejectedValueOnce(new NotFoundException('Animal does not exist'));
 
-      await expect(medicineApplicationsService.create(mockUser, dto)).rejects.toThrow(
+      await expect(medicineApplicationsService.create(animalUuid, dto, mockUser)).rejects.toThrow(
         new NotFoundException('Animal does not exist'),
       );
 
-      expect(mockAnimalsService.findOne).toHaveBeenCalledWith(dto.animalUuid);
+      expect(mockAnimalsService.findOne).toHaveBeenCalledWith(animalUuid);
       expect(mockMedicinesService.findOne).not.toHaveBeenCalled();
       expect(mockMedicineApplicationRepository.create).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException if medicine does not exist', async () => {
+      const animalUuid = 'animal-uuid-123';
       const dto = mockCreateMedicineApplicationDto({
         nextApplicationAt: undefined,
         frequency: undefined,
         endsAt: undefined,
       });
-      const mockUser = mockMedicineApplicationEntity().user;
-      const mockAnimal = mockMedicineApplicationEntity().animal;
+      const mockUser = mockUserEntity();
+      const mockAnimal = mockAnimalEntity();
 
       mockAnimalsService.findOne.mockResolvedValueOnce(mockAnimal);
       mockMedicinesService.findOne.mockRejectedValueOnce(new NotFoundException('Medicine does not exist'));
 
-      await expect(medicineApplicationsService.create(mockUser, dto)).rejects.toThrow(
+      await expect(medicineApplicationsService.create(animalUuid, dto, mockUser)).rejects.toThrow(
         new NotFoundException('Medicine does not exist'),
       );
 
-      expect(mockAnimalsService.findOne).toHaveBeenCalledWith(dto.animalUuid);
+      expect(mockAnimalsService.findOne).toHaveBeenCalledWith(animalUuid);
       expect(mockMedicinesService.findOne).toHaveBeenCalledWith(dto.medicineUuid);
       expect(mockMedicineApplicationRepository.create).not.toHaveBeenCalled();
     });
   });
 
-  describe('findAll', () => {
-    it('should return all medicine applications', async () => {
-      const medicineApplications: MedicineApplicationEntity[] = [
-        mockMedicineApplicationEntity(),
-        mockMedicineApplicationEntity({ uuid: 'application-uuid-456' }),
-      ];
+  describe('findAllByAnimal', () => {
+    it('should return paginated medicine applications for an animal', async () => {
+      const animalUuid = 'animal-uuid-123';
+      const paginated = {
+        data: [mockMedicineApplicationEntity(), mockMedicineApplicationEntity({ uuid: 'application-uuid-456' })],
+      };
+      (paginate as jest.Mock).mockResolvedValueOnce(paginated);
 
-      mockMedicineApplicationRepository.find.mockResolvedValueOnce(medicineApplications);
-
-      const result = await medicineApplicationsService.findAll();
-
-      expect(mockMedicineApplicationRepository.find).toHaveBeenCalled();
-      expect(result).toBe(medicineApplications);
-    });
-  });
-
-  describe('findOne', () => {
-    it('should throw NotFoundException if medicine application does not exist', async () => {
-      mockMedicineApplicationRepository.findOneBy.mockResolvedValueOnce(null);
-
-      await expect(medicineApplicationsService.findOne('123')).rejects.toThrow(
-        new NotFoundException('Medicine application does not exist'),
+      const query = {};
+      const result = await medicineApplicationsService.findAllByAnimal(
+        animalUuid,
+        query as unknown as import('nestjs-paginate').PaginateQuery,
       );
 
-      expect(mockMedicineApplicationRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
-    });
-
-    it('should return medicine application if exists', async () => {
-      const mockMedicineApplication = mockMedicineApplicationEntity();
-      mockMedicineApplicationRepository.findOneBy.mockResolvedValueOnce(mockMedicineApplication);
-
-      const result = await medicineApplicationsService.findOne('123');
-
-      expect(mockMedicineApplicationRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
-      expect(result).toBe(mockMedicineApplication);
+      expect(paginate).toHaveBeenCalledWith(
+        query,
+        medicineApplicationRepository,
+        expect.objectContaining({ where: { animal: { uuid: animalUuid } } }),
+      );
+      expect(result).toBe(paginated);
     });
   });
 
   describe('remove', () => {
     it('should throw NotFoundException if medicine application does not exist', async () => {
-      mockMedicineApplicationRepository.findOneBy.mockResolvedValueOnce(null);
+      mockMedicineApplicationRepository.findOne.mockResolvedValueOnce(null);
 
       await expect(medicineApplicationsService.remove('123')).rejects.toThrow(
         new NotFoundException('Medicine application does not exist'),
       );
 
-      expect(mockMedicineApplicationRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
+      expect(mockMedicineApplicationRepository.findOne).toHaveBeenCalledWith({
+        where: { uuid: '123' },
+        relations: ['medicine'],
+      });
       expect(googleCalendar.deleteEvent).not.toHaveBeenCalled();
       expect(mockMedicineApplicationRepository.remove).not.toHaveBeenCalled();
     });
@@ -283,13 +346,22 @@ describe('MedicineApplicationsService', () => {
         googleCalendarEventId: null,
       });
 
-      mockMedicineApplicationRepository.findOneBy.mockResolvedValueOnce(medicineApplicationWithoutEvent);
+      const mockMedicine = mockMedicineEntity({ quantity: 10 });
+      medicineApplicationWithoutEvent.medicine = mockMedicine;
+
+      mockMedicineApplicationRepository.findOne.mockResolvedValueOnce(medicineApplicationWithoutEvent);
       mockMedicineApplicationRepository.remove.mockResolvedValueOnce(medicineApplicationWithoutEvent);
 
       await medicineApplicationsService.remove('123');
 
-      expect(mockMedicineApplicationRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
+      expect(mockMedicineApplicationRepository.findOne).toHaveBeenCalledWith({
+        where: { uuid: '123' },
+        relations: ['medicine'],
+      });
       expect(googleCalendar.deleteEvent).not.toHaveBeenCalled();
+      expect(mockMedicinesService.update).toHaveBeenCalledWith(mockMedicine.uuid, {
+        quantity: mockMedicine.quantity + medicineApplicationWithoutEvent.quantity,
+      });
       expect(mockMedicineApplicationRepository.remove).toHaveBeenCalledWith(medicineApplicationWithoutEvent);
     });
 
@@ -298,15 +370,39 @@ describe('MedicineApplicationsService', () => {
         googleCalendarEventId: 'event-id-123',
       });
 
-      mockMedicineApplicationRepository.findOneBy.mockResolvedValueOnce(medicineApplicationWithEvent);
+      const mockMedicine = mockMedicineEntity({ quantity: 10 });
+      medicineApplicationWithEvent.medicine = mockMedicine;
+
+      mockMedicineApplicationRepository.findOne.mockResolvedValueOnce(medicineApplicationWithEvent);
       (googleCalendar.deleteEvent as jest.Mock).mockResolvedValueOnce(undefined);
       mockMedicineApplicationRepository.remove.mockResolvedValueOnce(medicineApplicationWithEvent);
 
       await medicineApplicationsService.remove('123');
 
-      expect(mockMedicineApplicationRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
+      expect(mockMedicineApplicationRepository.findOne).toHaveBeenCalledWith({
+        where: { uuid: '123' },
+        relations: ['medicine'],
+      });
       expect(googleCalendar.deleteEvent).toHaveBeenCalledWith('event-id-123');
+      expect(mockMedicinesService.update).toHaveBeenCalledWith(mockMedicine.uuid, {
+        quantity: mockMedicine.quantity + medicineApplicationWithEvent.quantity,
+      });
       expect(mockMedicineApplicationRepository.remove).toHaveBeenCalledWith(medicineApplicationWithEvent);
+    });
+
+    it('should not increment stock when medicine has infinite quantity (-1)', async () => {
+      const medicineApplication = mockMedicineApplicationEntity({
+        googleCalendarEventId: null,
+      });
+      const mockMedicine = mockMedicineEntity({ quantity: -1 });
+      medicineApplication.medicine = mockMedicine;
+
+      mockMedicineApplicationRepository.findOne.mockResolvedValueOnce(medicineApplication);
+      mockMedicineApplicationRepository.remove.mockResolvedValueOnce(medicineApplication);
+
+      await medicineApplicationsService.remove('123');
+
+      expect(mockMedicinesService.update).not.toHaveBeenCalled();
     });
   });
 });

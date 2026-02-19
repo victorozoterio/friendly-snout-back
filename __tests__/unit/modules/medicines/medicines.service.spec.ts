@@ -1,6 +1,8 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { paginate } from 'nestjs-paginate';
+import { MedicineApplicationEntity } from 'src/modules/medicine-applications/entities/medicine-application.entity';
 import { MedicineBrandsService } from 'src/modules/medicine-brands/medicine-brands.service';
 import { CreateMedicineDto } from 'src/modules/medicines/dto/create-medicine.dto';
 import { UpdateMedicineDto } from 'src/modules/medicines/dto/update-medicine.dto';
@@ -9,10 +11,19 @@ import { MedicinesService } from 'src/modules/medicines/medicines.service';
 import { Repository } from 'typeorm';
 import { mockMedicineBrandEntity, mockMedicineEntity } from '../../mocks';
 
+jest.mock('nestjs-paginate', () => {
+  const actual = jest.requireActual('nestjs-paginate');
+  return {
+    ...actual,
+    paginate: jest.fn(),
+  };
+});
+
 describe('MedicinesService', () => {
   let medicinesService: MedicinesService;
   let medicineRepository: Repository<MedicineEntity>;
   let medicineBrandsService: MedicineBrandsService;
+  let medicineApplicationRepository: Repository<MedicineApplicationEntity>;
 
   const mockMedicineRepository = {
     findOneBy: jest.fn(),
@@ -22,6 +33,10 @@ describe('MedicinesService', () => {
     find: jest.fn(),
     merge: jest.fn(),
     remove: jest.fn(),
+  };
+
+  const mockMedicineApplicationRepository = {
+    count: jest.fn(),
   };
 
   const mockMedicineBrandsService = {
@@ -39,6 +54,10 @@ describe('MedicinesService', () => {
           useValue: mockMedicineRepository,
         },
         {
+          provide: getRepositoryToken(MedicineApplicationEntity),
+          useValue: mockMedicineApplicationRepository,
+        },
+        {
           provide: MedicineBrandsService,
           useValue: mockMedicineBrandsService,
         },
@@ -47,6 +66,9 @@ describe('MedicinesService', () => {
 
     medicinesService = module.get<MedicinesService>(MedicinesService);
     medicineRepository = module.get<Repository<MedicineEntity>>(getRepositoryToken(MedicineEntity));
+    medicineApplicationRepository = module.get<Repository<MedicineApplicationEntity>>(
+      getRepositoryToken(MedicineApplicationEntity),
+    );
     medicineBrandsService = module.get<MedicineBrandsService>(MedicineBrandsService);
   });
 
@@ -54,6 +76,7 @@ describe('MedicinesService', () => {
     expect(medicinesService).toBeDefined();
     expect(medicineRepository).toBeDefined();
     expect(medicineBrandsService).toBeDefined();
+    expect(medicineApplicationRepository).toBeDefined();
   });
 
   describe('create', () => {
@@ -98,6 +121,7 @@ describe('MedicinesService', () => {
       const dto: CreateMedicineDto = {
         name: 'dorflex',
         description: 'semelhante ao original',
+        quantity: -1,
         medicineBrandUuid: 'brand-uuid-123',
       };
 
@@ -149,35 +173,42 @@ describe('MedicinesService', () => {
   });
 
   describe('findAll', () => {
-    it('should return all medicines with relations', async () => {
-      const mockMedicine = mockMedicineEntity();
-      const medicines: MedicineEntity[] = [mockMedicine, mockMedicineEntity({ uuid: 'medicine-uuid-456' })];
+    it('should return paginated medicines', async () => {
+      const paginated = {
+        data: [mockMedicineEntity(), mockMedicineEntity({ uuid: 'medicine-uuid-456' })],
+      };
+      (paginate as jest.Mock).mockResolvedValueOnce(paginated);
 
-      mockMedicineRepository.find.mockResolvedValueOnce(medicines);
+      const query = {};
+      const result = await medicinesService.findAll(query as unknown as import('nestjs-paginate').PaginateQuery);
 
-      const result = await medicinesService.findAll();
-
-      expect(mockMedicineRepository.find).toHaveBeenCalledWith({ relations: ['medicineBrand'] });
-      expect(result).toBe(medicines);
+      expect(paginate).toHaveBeenCalledWith(query, medicineRepository, expect.any(Object));
+      expect(result).toBe(paginated);
     });
   });
 
   describe('findOne', () => {
     it('should throw NotFoundException if medicine does not exist', async () => {
-      mockMedicineRepository.findOneBy.mockResolvedValueOnce(null);
+      mockMedicineRepository.findOne.mockResolvedValueOnce(null);
 
       await expect(medicinesService.findOne('123')).rejects.toThrow(new NotFoundException('Medicine does not exist'));
 
-      expect(mockMedicineRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
+      expect(mockMedicineRepository.findOne).toHaveBeenCalledWith({
+        where: { uuid: '123' },
+        relations: ['medicineBrand'],
+      });
     });
 
     it('should return medicine if exists', async () => {
       const mockMedicine = mockMedicineEntity();
-      mockMedicineRepository.findOneBy.mockResolvedValueOnce(mockMedicine);
+      mockMedicineRepository.findOne.mockResolvedValueOnce(mockMedicine);
 
       const result = await medicinesService.findOne('123');
 
-      expect(mockMedicineRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
+      expect(mockMedicineRepository.findOne).toHaveBeenCalledWith({
+        where: { uuid: '123' },
+        relations: ['medicineBrand'],
+      });
       expect(result).toEqual(mockMedicine);
     });
   });
@@ -378,11 +409,13 @@ describe('MedicinesService', () => {
     it('should remove medicine', async () => {
       const mockMedicine = mockMedicineEntity();
       mockMedicineRepository.findOneBy.mockResolvedValueOnce(mockMedicine);
+      mockMedicineApplicationRepository.count.mockResolvedValueOnce(0);
       mockMedicineRepository.remove.mockResolvedValueOnce(mockMedicine);
 
       await medicinesService.remove('123');
 
       expect(mockMedicineRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
+      expect(mockMedicineApplicationRepository.count).toHaveBeenCalledWith({ where: { medicine: { uuid: '123' } } });
       expect(mockMedicineRepository.remove).toHaveBeenCalledWith(mockMedicine);
     });
   });

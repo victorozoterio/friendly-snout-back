@@ -1,15 +1,26 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { paginate } from 'nestjs-paginate';
 import { CreateMedicineBrandDto } from 'src/modules/medicine-brands/dto/create-medicine-brand.dto';
 import { UpdateMedicineBrandDto } from 'src/modules/medicine-brands/dto/update-medicine-brand.dto';
 import { MedicineBrandEntity } from 'src/modules/medicine-brands/entities/medicine-brand.entity';
 import { MedicineBrandsService } from 'src/modules/medicine-brands/medicine-brands.service';
+import { MedicineEntity } from 'src/modules/medicines/entities/medicine.entity';
 import { Repository } from 'typeorm';
+
+jest.mock('nestjs-paginate', () => {
+  const actual = jest.requireActual('nestjs-paginate');
+  return {
+    ...actual,
+    paginate: jest.fn(),
+  };
+});
 
 describe('MedicineBrandsService', () => {
   let medicineBrandsService: MedicineBrandsService;
   let medicineBrandRepository: Repository<MedicineBrandEntity>;
+  let medicineRepository: Repository<MedicineEntity>;
 
   const mockMedicineBrandRepository = {
     findOneBy: jest.fn(),
@@ -18,6 +29,10 @@ describe('MedicineBrandsService', () => {
     find: jest.fn(),
     merge: jest.fn(),
     remove: jest.fn(),
+  };
+
+  const mockMedicineRepository = {
+    count: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -30,16 +45,22 @@ describe('MedicineBrandsService', () => {
           provide: getRepositoryToken(MedicineBrandEntity),
           useValue: mockMedicineBrandRepository,
         },
+        {
+          provide: getRepositoryToken(MedicineEntity),
+          useValue: mockMedicineRepository,
+        },
       ],
     }).compile();
 
     medicineBrandsService = module.get<MedicineBrandsService>(MedicineBrandsService);
     medicineBrandRepository = module.get<Repository<MedicineBrandEntity>>(getRepositoryToken(MedicineBrandEntity));
+    medicineRepository = module.get<Repository<MedicineEntity>>(getRepositoryToken(MedicineEntity));
   });
 
   it('should be defined', () => {
     expect(medicineBrandsService).toBeDefined();
     expect(medicineBrandRepository).toBeDefined();
+    expect(medicineRepository).toBeDefined();
   });
 
   describe('create', () => {
@@ -84,28 +105,24 @@ describe('MedicineBrandsService', () => {
   });
 
   describe('findAll', () => {
-    it('should return all medicine brands', async () => {
-      const medicineBrands: MedicineBrandEntity[] = [
-        {
-          uuid: '123',
-          name: 'Vetnil',
-          createdAt: new Date('2024-01-10'),
-          updatedAt: new Date('2024-01-10'),
-        },
-        {
-          uuid: '456',
-          name: 'Zoetis',
-          createdAt: new Date('2024-01-10'),
-          updatedAt: new Date('2024-01-10'),
-        },
-      ];
+    it('should return paginated medicine brands', async () => {
+      const paginated = {
+        data: [
+          {
+            uuid: '123',
+            name: 'Vetnil',
+            createdAt: new Date('2024-01-10'),
+            updatedAt: new Date('2024-01-10'),
+          },
+        ],
+      };
+      (paginate as jest.Mock).mockResolvedValueOnce(paginated);
 
-      mockMedicineBrandRepository.find.mockResolvedValueOnce(medicineBrands);
+      const query = {};
+      const result = await medicineBrandsService.findAll(query as unknown as import('nestjs-paginate').PaginateQuery);
 
-      const result = await medicineBrandsService.findAll();
-
-      expect(mockMedicineBrandRepository.find).toHaveBeenCalled();
-      expect(result).toBe(medicineBrands);
+      expect(paginate).toHaveBeenCalledWith(query, medicineBrandRepository, expect.any(Object));
+      expect(result).toBe(paginated);
     });
   });
 
@@ -247,11 +264,15 @@ describe('MedicineBrandsService', () => {
       };
 
       mockMedicineBrandRepository.findOneBy.mockResolvedValueOnce(medicineBrand);
+      mockMedicineRepository.count.mockResolvedValueOnce(0);
       mockMedicineBrandRepository.remove.mockResolvedValueOnce(medicineBrand);
 
       await medicineBrandsService.remove('123');
 
       expect(mockMedicineBrandRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
+      expect(mockMedicineRepository.count).toHaveBeenCalledWith({
+        where: { medicineBrand: { uuid: '123' }, isActive: true },
+      });
       expect(mockMedicineBrandRepository.remove).toHaveBeenCalledWith(medicineBrand);
     });
   });

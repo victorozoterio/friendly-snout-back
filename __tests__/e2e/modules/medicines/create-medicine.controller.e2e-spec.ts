@@ -10,6 +10,7 @@ describe('MedicinesController (e2e)', () => {
   let medicineBrandUuid: string;
   let userEmail: string;
   let userPassword: string;
+  let xApiKey: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -20,11 +21,13 @@ describe('MedicinesController (e2e)', () => {
     app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }));
     await app.init();
 
+    xApiKey = process.env.X_API_KEY ?? 'test-x-api-key';
+
     // Setup: Criar usuário
     userEmail = `test-${Date.now()}@example.com`;
     userPassword = 'Senha@123';
 
-    const createUserResponse = await request(app.getHttpServer()).post('/users').send({
+    const createUserResponse = await request(app.getHttpServer()).post('/users').set('x-api-key', xApiKey).send({
       name: 'Test User',
       email: userEmail,
       password: userPassword,
@@ -33,7 +36,7 @@ describe('MedicinesController (e2e)', () => {
     expect(createUserResponse.status).toBe(201);
 
     // Setup: Autenticar usuário
-    const signInResponse = await request(app.getHttpServer()).post('/auth/sign-in').send({
+    const signInResponse = await request(app.getHttpServer()).post('/auth/sign-in').set('x-api-key', xApiKey).send({
       email: userEmail,
       password: userPassword,
     });
@@ -44,6 +47,7 @@ describe('MedicinesController (e2e)', () => {
     // Setup: Criar marca de medicamento
     const createBrandResponse = await request(app.getHttpServer())
       .post('/medicine-brands')
+      .set('x-api-key', xApiKey)
       .set('Authorization', `Bearer ${authToken}`)
       .send({
         name: `generico-${Date.now()}`,
@@ -70,6 +74,7 @@ describe('MedicinesController (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/medicines')
+        .set('x-api-key', xApiKey)
         .set('Authorization', `Bearer ${authToken}`)
         .send(createMedicineDto)
         .expect(201);
@@ -94,6 +99,7 @@ describe('MedicinesController (e2e)', () => {
       const concurrentRequests = Array.from({ length: 10 }, () =>
         request(app.getHttpServer())
           .post('/medicines')
+          .set('x-api-key', xApiKey)
           .set('Authorization', `Bearer ${authToken}`)
           .send(createMedicineDto),
       );
@@ -108,13 +114,13 @@ describe('MedicinesController (e2e)', () => {
       // Verificar que apenas um medicamento foi criado no banco
       const findAllResponse = await request(app.getHttpServer())
         .get('/medicines')
+        .set('x-api-key', xApiKey)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200);
 
-      const medicinesWithSameName = findAllResponse.body.filter(
-        (medicine: { name: string; medicineBrand: { uuid: string } }) =>
-          medicine.name === medicineName && medicine.medicineBrand.uuid === medicineBrandUuid,
-      );
+      const medicinesWithSameName = findAllResponse.body.data.filter((medicine: { name: string }) => {
+        return medicine.name === medicineName;
+      });
 
       expect(medicinesWithSameName).toHaveLength(1);
     });
@@ -123,6 +129,7 @@ describe('MedicinesController (e2e)', () => {
       // Criar uma segunda marca
       const createBrand2Response = await request(app.getHttpServer())
         .post('/medicine-brands')
+        .set('x-api-key', xApiKey)
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           name: `brand-${Date.now()}`,
@@ -135,6 +142,7 @@ describe('MedicinesController (e2e)', () => {
       // Criar medicamento com primeira marca
       const response1 = await request(app.getHttpServer())
         .post('/medicines')
+        .set('x-api-key', xApiKey)
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           name: medicineName,
@@ -147,6 +155,7 @@ describe('MedicinesController (e2e)', () => {
       // Criar medicamento com segunda marca (mesmo nome, marca diferente)
       const response2 = await request(app.getHttpServer())
         .post('/medicines')
+        .set('x-api-key', xApiKey)
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           name: medicineName,

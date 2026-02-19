@@ -1,12 +1,21 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { paginate } from 'nestjs-paginate';
 import { cloudflare } from 'src/lib';
 import { AnimalsService } from 'src/modules/animals/animals.service';
 import { AttachmentsService } from 'src/modules/attachments/attachments.service';
 import { AttachmentEntity } from 'src/modules/attachments/entities/attachment.entity';
 import { Repository } from 'typeorm';
 import { mockAnimalEntity, mockAttachmentEntity } from '../../mocks';
+
+jest.mock('nestjs-paginate', () => {
+  const actual = jest.requireActual('nestjs-paginate');
+  return {
+    ...actual,
+    paginate: jest.fn(),
+  };
+});
 
 jest.mock('src/lib', () => ({
   cloudflare: {
@@ -78,7 +87,7 @@ describe('AttachmentsService', () => {
       };
       const fileUrl = 'https://example.com/animal-uuid-123/test-file.jpg';
       const attachment = mockAttachmentEntity({
-        name: file.originalname,
+        name: 'test-file',
         url: fileUrl,
         type: 'jpeg',
         animal,
@@ -94,11 +103,11 @@ describe('AttachmentsService', () => {
 
       expect(mockAnimalsService.findOne).toHaveBeenCalledWith(animalUuid);
       expect(mockAttachmentRepository.findOne).toHaveBeenCalledWith({
-        where: { name: file.originalname, animal: { uuid: animalUuid } },
+        where: { name: 'test-file', animal: { uuid: animalUuid } },
       });
       expect(cloudflare.uploadFile).toHaveBeenCalledWith(animalUuid, file);
       expect(mockAttachmentRepository.create).toHaveBeenCalledWith({
-        name: file.originalname,
+        name: 'test-file',
         url: fileUrl,
         type: 'jpeg',
         animal,
@@ -132,7 +141,7 @@ describe('AttachmentsService', () => {
 
       expect(mockAnimalsService.findOne).toHaveBeenCalledWith(animalUuid);
       expect(mockAttachmentRepository.findOne).toHaveBeenCalledWith({
-        where: { name: file.originalname, animal: { uuid: animalUuid } },
+        where: { name: 'test-file', animal: { uuid: animalUuid } },
       });
       expect(cloudflare.uploadFile).not.toHaveBeenCalled();
       expect(mockAttachmentRepository.create).not.toHaveBeenCalled();
@@ -154,7 +163,7 @@ describe('AttachmentsService', () => {
       };
       const fileUrl = 'https://example.com/animal-uuid-123/test-file.png';
       const attachment = mockAttachmentEntity({
-        name: file.originalname,
+        name: 'test-file',
         url: fileUrl,
         type: 'png',
         animal,
@@ -169,7 +178,7 @@ describe('AttachmentsService', () => {
       const result = await attachmentsService.create(animalUuid, file);
 
       expect(mockAttachmentRepository.create).toHaveBeenCalledWith({
-        name: file.originalname,
+        name: 'test-file',
         url: fileUrl,
         type: 'png',
         animal,
@@ -179,18 +188,21 @@ describe('AttachmentsService', () => {
   });
 
   describe('findAllByAnimal', () => {
-    it('should return all attachments for an animal', async () => {
+    it('should return paginated attachments for an animal', async () => {
       const animalUuid = 'animal-uuid-123';
-      const attachments = [mockAttachmentEntity(), mockAttachmentEntity({ uuid: 'attachment-uuid-456' })];
+      const paginated = {
+        data: [mockAttachmentEntity(), mockAttachmentEntity({ uuid: 'attachment-uuid-456' })],
+      };
+      (paginate as jest.Mock).mockResolvedValueOnce(paginated);
 
-      mockAttachmentRepository.find.mockResolvedValueOnce(attachments);
+      const query = {};
+      const result = await attachmentsService.findAllByAnimal(
+        animalUuid,
+        query as unknown as import('nestjs-paginate').PaginateQuery,
+      );
 
-      const result = await attachmentsService.findAllByAnimal(animalUuid);
-
-      expect(mockAttachmentRepository.find).toHaveBeenCalledWith({
-        where: { animal: { uuid: animalUuid } },
-      });
-      expect(result).toBe(attachments);
+      expect(paginate).toHaveBeenCalledWith(query, attachmentRepository, expect.any(Object));
+      expect(result).toBe(paginated);
     });
   });
 

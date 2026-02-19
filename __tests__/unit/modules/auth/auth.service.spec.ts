@@ -24,7 +24,7 @@ describe('AuthService', () => {
 
   const mockJwtService = {
     sign: jest.fn(),
-    decode: jest.fn(),
+    verify: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -100,7 +100,7 @@ describe('AuthService', () => {
     it('throws UnauthorizedException when token type is not refresh', async () => {
       const dto: RefreshTokenDto = { refreshToken: 'token' };
 
-      (mockJwtService.decode as jest.Mock).mockReturnValueOnce({
+      (mockJwtService.verify as jest.Mock).mockReturnValueOnce({
         type: 'access', // invalid
         sub: '1234',
         email: 'test@example.com',
@@ -109,10 +109,22 @@ describe('AuthService', () => {
       await expect(authService.refreshToken(dto)).rejects.toThrow(new UnauthorizedException('Invalid token type'));
     });
 
+    it('throws UnauthorizedException when token is invalid or expired', async () => {
+      const dto: RefreshTokenDto = { refreshToken: 'token' };
+
+      (mockJwtService.verify as jest.Mock).mockImplementationOnce(() => {
+        throw new Error('invalid token');
+      });
+
+      await expect(authService.refreshToken(dto)).rejects.toThrow(
+        new UnauthorizedException('Invalid or expired refresh token'),
+      );
+    });
+
     it('throws UnauthorizedException when user is not found', async () => {
       const dto: RefreshTokenDto = { refreshToken: 'token' };
 
-      (mockJwtService.decode as jest.Mock).mockReturnValueOnce({
+      (mockJwtService.verify as jest.Mock).mockReturnValueOnce({
         type: 'refresh',
         sub: '1234',
         email: 'test@example.com',
@@ -128,7 +140,7 @@ describe('AuthService', () => {
     it('returns new accessToken and refreshToken when refresh token is valid', async () => {
       const dto: RefreshTokenDto = { refreshToken: 'token' };
 
-      (mockJwtService.decode as jest.Mock).mockReturnValueOnce({
+      (mockJwtService.verify as jest.Mock).mockReturnValueOnce({
         type: 'refresh',
         sub: '1234',
         email: 'test@example.com',

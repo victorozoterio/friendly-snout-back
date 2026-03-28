@@ -25,7 +25,7 @@ export class AttachmentsService {
     if (attachmentAlreadyExists) throw new ConflictException('Attachment already exists');
 
     const fileType = file.mimetype.split('/')[1];
-    const fileUrl = await cloudflare.uploadFile(animalUuid, file);
+    const fileUrl = await cloudflare.uploadFile(`${animalUuid}/attachments`, file);
 
     const attachment = this.repository.create({ name: nameWithoutExtension, url: fileUrl, type: fileType, animal });
     return this.repository.save(attachment);

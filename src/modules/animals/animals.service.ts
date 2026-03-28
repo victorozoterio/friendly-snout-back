@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, PaginateConfig, PaginateQuery, paginate } from 'nestjs-paginate';
+import { cloudflare } from 'src/lib';
 import { Repository } from 'typeorm';
 import { CreateAnimalDto } from './dto/create-animal.dto';
 import { UpdateAnimalDto } from './dto/update-animal.dto';
@@ -14,9 +15,17 @@ export class AnimalsService {
     private readonly repository: Repository<AnimalEntity>,
   ) {}
 
-  async create(dto: CreateAnimalDto) {
-    const createdAnimal = this.repository.create(dto);
-    return this.repository.save(createdAnimal);
+  async create(dto: CreateAnimalDto, file?: Express.Multer.File) {
+    const createdAnimal = this.repository.create({ ...dto, photoUrl: null });
+    const savedAnimal = await this.repository.save(createdAnimal);
+
+    if (file) {
+      const photoUrl = await cloudflare.uploadFile(`${savedAnimal.uuid}/profile-photo`, file);
+      savedAnimal.photoUrl = photoUrl;
+      await this.repository.save(savedAnimal);
+    }
+
+    return savedAnimal;
   }
 
   async findAll(query: PaginateQuery) {
@@ -73,12 +82,19 @@ export class AnimalsService {
     return animalExists;
   }
 
-  async update(uuid: string, dto: UpdateAnimalDto) {
+  async update(uuid: string, dto: UpdateAnimalDto, file?: Express.Multer.File) {
     const animalExists = await this.repository.findOneBy({ uuid });
     if (!animalExists) throw new NotFoundException('Animal does not exist');
 
     this.repository.merge(animalExists, dto);
-    return this.repository.save(animalExists);
+
+    if (file) {
+      if (animalExists.photoUrl) await cloudflare.deleteFile(animalExists.photoUrl);
+      const photoUrl = await cloudflare.uploadFile(`${animalExists.uuid}/profile-photo`, file);
+      animalExists.photoUrl = photoUrl;
+    }
+
+    return await this.repository.save(animalExists);
   }
 
   async remove(uuid: string) {

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsDate, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBooleanString, IsDate, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import {
   AnimalBreed,
   AnimalColor,
@@ -57,7 +57,7 @@ export class CreateAnimalDto {
   rga: string;
 
   @IsNotEmpty()
-  @IsBoolean()
+  @IsBooleanString()
   @ApiProperty()
   castrated: boolean;
 

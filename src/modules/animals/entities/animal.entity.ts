@@ -49,6 +49,9 @@ export class AnimalEntity {
   @Column({ name: 'notes', type: 'text', nullable: true })
   notes: string | null;
 
+  @Column({ name: 'photo_url', type: 'varchar', nullable: true })
+  photoUrl: string | null;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;
 

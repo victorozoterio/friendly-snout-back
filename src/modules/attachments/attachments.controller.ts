@@ -13,9 +13,9 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { RequiredFileValidationPipe } from '../../pipes';
 import { AttachmentsService } from './attachments.service';
 import { PaginatedAttachmentDto } from './dto/paginated-medicine.dto';
-import { FileValidationPipe } from './pipes/file-validation.pipe';
 
 const TEN_MEGABYTES = 10 * 1024 * 1024;
 
@@ -33,7 +33,7 @@ export class AttachmentsController {
   @ApiBody({ schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } } })
   async create(
     @Param('animalUuid', new ParseUUIDPipe()) animalUuid: string,
-    @UploadedFile(FileValidationPipe) file: Express.Multer.File,
+    @UploadedFile(RequiredFileValidationPipe) file: Express.Multer.File,
   ) {
     return await this.attachmentsService.create(animalUuid, file);
   }

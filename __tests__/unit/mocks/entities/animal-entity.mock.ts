@@ -25,6 +25,7 @@ export const mockAnimalEntity = (overrides?: Partial<AnimalEntity>): AnimalEntit
   felv: AnimalFivAndFelv.NOT_TESTED,
   status: AnimalStatus.QUARANTINE,
   notes: 'Animal resgatado, comportamento dócil e sociável.',
+  photoUrl: null,
   createdAt: new Date('2024-01-10'),
   updatedAt: new Date('2024-01-10'),
   ...overrides,

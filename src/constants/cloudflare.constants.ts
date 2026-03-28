@@ -1,9 +1,10 @@
 import { Environment } from 'src/utils';
 
 const isDev = process.env.NODE_ENV === Environment.DEV;
+const bucketName = process.env.CLOUDFLARE_BUCKET_NAME as string;
 
 export const CLOUDFLARE = {
-  BUCKET_NAME: isDev ? 'friendly-snout-dev' : 'friendly-snout-prd',
+  BUCKET_NAME: isDev ? `${bucketName}-dev` : `${bucketName}-prd`,
   ENDPOINT: process.env.CLOUDFLARE_ENDPOINT as string,
   ACCESS_KEY_ID: process.env.CLOUDFLARE_ACCESS_KEY_ID as string,
   SECRET_ACCESS_KEY: process.env.CLOUDFLARE_SECRET_ACCESS_KEY as string,

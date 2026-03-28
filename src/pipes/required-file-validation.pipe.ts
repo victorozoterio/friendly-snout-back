@@ -1,7 +1,7 @@
 import { BadRequestException, PipeTransform } from '@nestjs/common';
 
 export class RequiredFileValidationPipe implements PipeTransform {
-  private readonly allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+  private readonly allowedMimeTypes = ['image/jpeg', 'image/png', 'image/avif', 'image/webp', 'application/pdf'];
 
   transform(file: Express.Multer.File | undefined): Express.Multer.File {
     if (!file) {
@@ -9,7 +9,8 @@ export class RequiredFileValidationPipe implements PipeTransform {
     }
 
     if (!this.allowedMimeTypes.includes(file.mimetype)) {
-      throw new BadRequestException('Invalid file type. Allowed: JPEG, PNG, WEBP, PDF.');
+      const allowedLabels = this.allowedMimeTypes.map((type) => type.split('/')[1].toUpperCase()).join(', ');
+      throw new BadRequestException(`Invalid file type. Allowed: ${allowedLabels}`);
     }
 
     return file;

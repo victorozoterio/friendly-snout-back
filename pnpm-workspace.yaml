@@ -1,0 +1,9 @@
+packages:
+  - .
+
+allowBuilds:
+  '@nestjs/core': true
+  '@swc/core': true
+  argon2: true
+  unrs-resolver: true
+  '@scarf/scarf': false

@@ -1,6 +1,7 @@
 {
   "name": "friendly-snout-back",
   "version": "0.0.1",
+  "packageManager": "pnpm@11.7.0",
   "description": "",
   "author": "",
   "private": true,

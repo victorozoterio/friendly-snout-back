@@ -1,5 +1,5 @@
 import { AnimalEntity } from 'src/modules/animals/entities/animal.entity';
-import { AnimalColor, AnimalFivAndFelv, AnimalSex, AnimalSize, AnimalStatus } from 'src/modules/animals/utils';
+import { AnimalFivAndFelv, AnimalSex, AnimalSize, AnimalStatus } from 'src/modules/animals/utils';
 import { BreedEntity } from 'src/modules/species/entities/breed.entity';
 import { SpeciesEntity } from 'src/modules/species/entities/species.entity';
 
@@ -28,7 +28,7 @@ export const mockAnimalEntity = (overrides?: Partial<AnimalEntity>): AnimalEntit
   species,
   breed,
   size: AnimalSize.SMALL,
-  color: AnimalColor.BLACK,
+  color: 'preto',
   birthDate: new Date('2018-06-15'),
   microchip: 'MICRO-000123',
   rga: 'RGA-2024-001',

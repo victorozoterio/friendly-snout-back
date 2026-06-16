@@ -9,17 +9,6 @@ export enum AnimalSize {
   LARGE = 'grande',
 }
 
-export enum AnimalColor {
-  BLACK = 'preto',
-  WHITE = 'branco',
-  GRAY = 'cinza',
-  BROWN = 'marrom',
-  GOLDEN = 'dourado',
-  CREAM = 'creme',
-  TAN = 'caramelo',
-  SPECKLED = 'malhado',
-}
-
 export enum AnimalFivAndFelv {
   YES = 'sim',
   NO = 'não',

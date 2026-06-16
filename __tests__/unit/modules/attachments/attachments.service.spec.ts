@@ -105,7 +105,7 @@ describe('AttachmentsService', () => {
       expect(mockAttachmentRepository.findOne).toHaveBeenCalledWith({
         where: { name: 'test-file', animal: { uuid: animalUuid } },
       });
-      expect(cloudflare.uploadFile).toHaveBeenCalledWith(animalUuid, file);
+      expect(cloudflare.uploadFile).toHaveBeenCalledWith(`${animalUuid}/attachments`, file);
       expect(mockAttachmentRepository.create).toHaveBeenCalledWith({
         name: 'test-file',
         url: fileUrl,

@@ -3,31 +3,6 @@ export enum AnimalSex {
   FEMALE = 'fêmea',
 }
 
-export enum AnimalSpecies {
-  DOG = 'cachorro',
-  CAT = 'gato',
-}
-
-export enum AnimalBreed {
-  MIXED_BREED = 'S.R.D.',
-  SHIH_TZU = 'Shih Tzu',
-  YORKSHIRE = 'Yorkshire',
-  GERMAN_SPITZ = 'Spitz Alemão',
-  FRENCH_BULLDOG = 'Bulldog Francês',
-  POODLE = 'Poodle',
-  LHASA_APSO = 'Lhasa Apso',
-  GOLDEN = 'Golden',
-  ROTTWEILER = 'Rottweiler',
-  LABRADOR = 'Labrador',
-  PUG = 'Pug',
-  GERMAN_SHEPHERD = 'Pastor Alemão',
-  BORDER_COLLIE = 'Border Collie',
-  LONG = 'Chihuahua',
-  BELGIAN = 'Pastor Belga Malinois',
-  SIBERIAN_HUSKY = 'Husky Siberiano',
-  MALTESE = 'Maltês',
-}
-
 export enum AnimalSize {
   SMALL = 'pequeno',
   MEDIUM = 'médio',

@@ -7,6 +7,7 @@ import { CreateAnimalDto } from 'src/modules/animals/dto/create-animal.dto';
 import { UpdateAnimalDto } from 'src/modules/animals/dto/update-animal.dto';
 import { AnimalEntity } from 'src/modules/animals/entities/animal.entity';
 import { AnimalStatus } from 'src/modules/animals/utils';
+import { SpeciesService } from 'src/modules/species/species.service';
 import { Repository } from 'typeorm';
 
 import { mockAnimalEntity, mockCreateAnimalDto } from '../../mocks';
@@ -19,11 +20,19 @@ jest.mock('nestjs-paginate', () => {
   };
 });
 
+jest.mock('src/lib', () => ({
+  cloudflare: {
+    uploadFile: jest.fn(),
+    deleteFile: jest.fn(),
+  },
+}));
+
 describe('AnimalsService', () => {
   let animalsService: AnimalsService;
   let animalRepository: Repository<AnimalEntity>;
 
   const mockAnimalRepository = {
+    findOne: jest.fn(),
     findOneBy: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
@@ -31,6 +40,11 @@ describe('AnimalsService', () => {
     createQueryBuilder: jest.fn(),
     merge: jest.fn(),
     remove: jest.fn(),
+  };
+
+  const mockSpeciesService = {
+    findOne: jest.fn(),
+    findBreed: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -42,6 +56,10 @@ describe('AnimalsService', () => {
         {
           provide: getRepositoryToken(AnimalEntity),
           useValue: mockAnimalRepository,
+        },
+        {
+          provide: SpeciesService,
+          useValue: mockSpeciesService,
         },
       ],
     }).compile();
@@ -60,12 +78,29 @@ describe('AnimalsService', () => {
       const dto: CreateAnimalDto = mockCreateAnimalDto();
       const animal = mockAnimalEntity();
 
+      mockSpeciesService.findOne.mockResolvedValueOnce(animal.species);
+      mockSpeciesService.findBreed.mockResolvedValueOnce(animal.breed);
       mockAnimalRepository.create.mockReturnValueOnce(animal);
       mockAnimalRepository.save.mockResolvedValueOnce(animal);
 
       const result = await animalsService.create(dto);
 
-      expect(mockAnimalRepository.create).toHaveBeenCalledWith(dto);
+      expect(mockAnimalRepository.create).toHaveBeenCalledWith({
+        name: dto.name,
+        sex: dto.sex,
+        size: dto.size,
+        color: dto.color,
+        birthDate: dto.birthDate,
+        microchip: dto.microchip,
+        rga: dto.rga,
+        castrated: dto.castrated,
+        fiv: dto.fiv,
+        felv: dto.felv,
+        notes: dto.notes,
+        species: animal.species,
+        breed: animal.breed,
+        photoUrl: null,
+      });
       expect(mockAnimalRepository.save).toHaveBeenCalledWith(animal);
       expect(result).toBe(animal);
     });
@@ -94,10 +129,9 @@ describe('AnimalsService', () => {
         groupBy: jest.fn().mockReturnThis(),
         addGroupBy: jest.fn().mockReturnThis(),
         getRawMany: jest.fn().mockResolvedValueOnce([
-          { status: AnimalStatus.QUARANTINE, species: 'cachorro', count: '2' },
-          { status: AnimalStatus.QUARANTINE, species: 'gato', count: '1' },
-          { status: AnimalStatus.SHELTERED, species: 'cachorro', count: '3' },
-          { status: AnimalStatus.ADOPTED, species: 'gato', count: '4' },
+          { status: AnimalStatus.QUARANTINE, count: '3' },
+          { status: AnimalStatus.SHELTERED, count: '3' },
+          { status: AnimalStatus.ADOPTED, count: '4' },
         ]),
       };
 
@@ -107,15 +141,14 @@ describe('AnimalsService', () => {
 
       expect(mockAnimalRepository.createQueryBuilder).toHaveBeenCalledWith('a');
       expect(qb.select).toHaveBeenCalledWith('a.status', 'status');
-      expect(qb.addSelect).toHaveBeenCalledWith('a.species', 'species');
       expect(qb.addSelect).toHaveBeenCalledWith('COUNT(*)', 'count');
       expect(qb.groupBy).toHaveBeenCalledWith('a.status');
-      expect(qb.addGroupBy).toHaveBeenCalledWith('a.species');
 
       expect(result).toEqual({
-        quarantine: { dogs: 2, cats: 1, total: 3 },
-        sheltered: { dogs: 3, cats: 0, total: 3 },
-        adopted: { dogs: 0, cats: 4, total: 4 },
+        quarantine: 3,
+        sheltered: 3,
+        adopted: 4,
+        lost: 0,
       });
     });
 
@@ -135,37 +168,44 @@ describe('AnimalsService', () => {
       const result = await animalsService.totalPerStage();
 
       expect(result).toEqual({
-        quarantine: { dogs: 0, cats: 0, total: 0 },
-        sheltered: { dogs: 0, cats: 0, total: 0 },
-        adopted: { dogs: 0, cats: 0, total: 0 },
+        quarantine: 0,
+        sheltered: 0,
+        adopted: 0,
+        lost: 0,
       });
     });
   });
 
   describe('findOne', () => {
     it('should throw NotFoundException if animal does not exist', async () => {
-      mockAnimalRepository.findOneBy.mockResolvedValueOnce(null);
+      mockAnimalRepository.findOne.mockResolvedValueOnce(null);
 
       await expect(animalsService.findOne('123')).rejects.toThrow(new NotFoundException('Animal does not exist'));
 
-      expect(mockAnimalRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
+      expect(mockAnimalRepository.findOne).toHaveBeenCalledWith({
+        where: { uuid: '123' },
+        relations: ['species', 'breed'],
+      });
     });
 
     it('should return animal if exists', async () => {
       const animal = mockAnimalEntity();
 
-      mockAnimalRepository.findOneBy.mockResolvedValueOnce(animal);
+      mockAnimalRepository.findOne.mockResolvedValueOnce(animal);
 
       const result = await animalsService.findOne('123');
 
-      expect(mockAnimalRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
+      expect(mockAnimalRepository.findOne).toHaveBeenCalledWith({
+        where: { uuid: '123' },
+        relations: ['species', 'breed'],
+      });
       expect(result).toBe(animal);
     });
   });
 
   describe('update', () => {
     it('should throw NotFoundException if animal does not exist', async () => {
-      mockAnimalRepository.findOneBy.mockResolvedValueOnce(null);
+      mockAnimalRepository.findOne.mockResolvedValueOnce(null);
 
       const dto: UpdateAnimalDto = {
         notes: 'Animal passou por avaliação veterinária.',
@@ -174,7 +214,10 @@ describe('AnimalsService', () => {
 
       await expect(animalsService.update('123', dto)).rejects.toThrow(new NotFoundException('Animal does not exist'));
 
-      expect(mockAnimalRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
+      expect(mockAnimalRepository.findOne).toHaveBeenCalledWith({
+        where: { uuid: '123' },
+        relations: ['species', 'breed'],
+      });
     });
 
     it('should update and return animal', async () => {
@@ -184,12 +227,15 @@ describe('AnimalsService', () => {
         status: AnimalStatus.QUARANTINE,
       };
 
-      mockAnimalRepository.findOneBy.mockResolvedValueOnce(animal);
+      mockAnimalRepository.findOne.mockResolvedValueOnce(animal);
       mockAnimalRepository.save.mockResolvedValueOnce({ ...animal, ...dto });
 
       const result = await animalsService.update('123', dto);
 
-      expect(mockAnimalRepository.findOneBy).toHaveBeenCalledWith({ uuid: '123' });
+      expect(mockAnimalRepository.findOne).toHaveBeenCalledWith({
+        where: { uuid: '123' },
+        relations: ['species', 'breed'],
+      });
       expect(mockAnimalRepository.merge).toHaveBeenCalledWith(animal, dto);
       expect(mockAnimalRepository.save).toHaveBeenCalledWith(animal);
       expect(result).toEqual({ ...animal, ...dto });

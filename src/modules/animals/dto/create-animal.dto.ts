@@ -1,14 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBooleanString, IsDate, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import {
-  AnimalBreed,
-  AnimalColor,
-  AnimalFivAndFelv,
-  AnimalSex,
-  AnimalSize,
-  AnimalSpecies,
-} from 'src/modules/animals/utils';
+import { IsBooleanString, IsDate, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { AnimalColor, AnimalFivAndFelv, AnimalSex, AnimalSize } from 'src/modules/animals/utils';
 
 export class CreateAnimalDto {
   @IsNotEmpty()
@@ -22,14 +15,14 @@ export class CreateAnimalDto {
   sex: AnimalSex;
 
   @IsNotEmpty()
-  @IsEnum(AnimalSpecies)
-  @ApiProperty({ enum: AnimalSpecies })
-  species: AnimalSpecies;
+  @IsUUID()
+  @ApiProperty()
+  speciesUuid: string;
 
   @IsNotEmpty()
-  @IsEnum(AnimalBreed)
-  @ApiProperty({ enum: AnimalBreed })
-  breed: AnimalBreed;
+  @IsUUID()
+  @ApiProperty()
+  breedUuid: string;
 
   @IsNotEmpty()
   @IsEnum(AnimalSize)

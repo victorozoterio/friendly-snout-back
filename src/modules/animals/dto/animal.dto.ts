@@ -1,13 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  AnimalBreed,
-  AnimalColor,
-  AnimalFivAndFelv,
-  AnimalSex,
-  AnimalSize,
-  AnimalSpecies,
-  AnimalStatus,
-} from 'src/modules/animals/utils';
+import { AnimalColor, AnimalFivAndFelv, AnimalSex, AnimalSize, AnimalStatus } from 'src/modules/animals/utils';
+import { BreedDto } from 'src/modules/species/dto/breed.dto';
+import { SpeciesDto } from 'src/modules/species/dto/species.dto';
 
 export class AnimalDto {
   @ApiProperty()
@@ -19,11 +13,17 @@ export class AnimalDto {
   @ApiProperty({ enum: AnimalSex })
   sex: AnimalSex;
 
-  @ApiProperty({ enum: AnimalSpecies })
-  species: AnimalSpecies;
+  @ApiProperty()
+  speciesUuid: string;
 
-  @ApiProperty({ enum: AnimalBreed })
-  breed: AnimalBreed;
+  @ApiProperty()
+  breedUuid: string;
+
+  @ApiProperty({ type: SpeciesDto })
+  species: SpeciesDto;
+
+  @ApiProperty({ type: BreedDto })
+  breed: BreedDto;
 
   @ApiProperty({ enum: AnimalSize })
   size: AnimalSize;

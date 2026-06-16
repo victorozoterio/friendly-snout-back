@@ -12,6 +12,7 @@ import { HealthModule } from './modules/health/health.module';
 import { MedicineApplicationsModule } from './modules/medicine-applications/medicine-applications.module';
 import { MedicineBrandsModule } from './modules/medicine-brands/medicine-brands.module';
 import { MedicinesModule } from './modules/medicines/medicines.module';
+import { SpeciesModule } from './modules/species/species.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -21,6 +22,7 @@ import { UsersModule } from './modules/users/users.module';
     HealthModule,
     UsersModule,
     AuthModule,
+    SpeciesModule,
     AnimalsModule,
     MedicineBrandsModule,
     MedicinesModule,

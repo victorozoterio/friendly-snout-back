@@ -1,5 +1,16 @@
 import { AnimalStatus } from 'src/modules/animals/utils';
-import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { BreedEntity } from 'src/modules/species/entities/breed.entity';
+import { SpeciesEntity } from 'src/modules/species/entities/species.entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity('animals')
 @Index(['species', 'status'])
@@ -12,12 +23,6 @@ export class AnimalEntity {
 
   @Column({ name: 'sex', type: 'varchar', nullable: false })
   sex: string;
-
-  @Column({ name: 'species', type: 'varchar', nullable: false })
-  species: string;
-
-  @Column({ name: 'breed', type: 'varchar', nullable: false })
-  breed: string;
 
   @Column({ name: 'size', type: 'varchar', nullable: false })
   size: string;
@@ -57,4 +62,20 @@ export class AnimalEntity {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt: Date;
+
+  @ManyToOne(
+    () => SpeciesEntity,
+    (species) => species.uuid,
+    { onDelete: 'RESTRICT' },
+  )
+  @JoinColumn({ name: 'species_uuid', referencedColumnName: 'uuid' })
+  species: SpeciesEntity;
+
+  @ManyToOne(
+    () => BreedEntity,
+    (breed) => breed.uuid,
+    { onDelete: 'RESTRICT' },
+  )
+  @JoinColumn({ name: 'breed_uuid', referencedColumnName: 'uuid' })
+  breed: BreedEntity;
 }

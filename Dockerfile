@@ -12,7 +12,6 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 RUN pnpm run build
-RUN pnpm prune --prod --ignore-scripts
 
 
 # -------- RUNTIME --------
@@ -29,6 +28,8 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/tsconfig.json ./tsconfig.json
 COPY --from=build /app/tsconfig.build.json ./tsconfig.build.json
 COPY --from=build /app/package.json ./
+COPY --from=build /app/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=build /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --from=build /app/.env.prd ./.env.prd
 
 EXPOSE 3000

@@ -6,3 +6,9 @@ export enum MedicineApplicationFrequency {
   MONTHLY = 'mensal',
   YEARLY = 'anual',
 }
+
+export enum MedicineApplicationStatus {
+  LATE = 'em atraso',
+  APPLIED = 'aplicado',
+  UP_TO_DATE = 'em dia',
+}

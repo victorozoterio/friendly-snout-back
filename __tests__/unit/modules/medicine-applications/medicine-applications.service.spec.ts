@@ -1,7 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { paginate } from 'nestjs-paginate';
 import { googleCalendar } from 'src/lib';
 import { AnimalsService } from 'src/modules/animals/animals.service';
 import { MedicineApplicationEntity } from 'src/modules/medicine-applications/entities/medicine-application.entity';
@@ -23,19 +22,25 @@ jest.mock('src/lib', () => ({
   },
 }));
 
-jest.mock('nestjs-paginate', () => {
-  const actual = jest.requireActual('nestjs-paginate');
-  return {
-    ...actual,
-    paginate: jest.fn(),
-  };
-});
-
 describe('MedicineApplicationsService', () => {
   let medicineApplicationsService: MedicineApplicationsService;
   let medicineApplicationRepository: Repository<MedicineApplicationEntity>;
   let animalsService: AnimalsService;
   let medicinesService: MedicinesService;
+  let queryBuilder: {
+    leftJoinAndSelect: jest.Mock;
+    leftJoin: jest.Mock;
+    where: jest.Mock;
+    andWhere: jest.Mock;
+    addSelect: jest.Mock;
+    orderBy: jest.Mock;
+    addOrderBy: jest.Mock;
+    skip: jest.Mock;
+    take: jest.Mock;
+    clone: jest.Mock;
+    getCount: jest.Mock;
+    getMany: jest.Mock;
+  };
 
   const mockMedicineApplicationRepository = {
     findOneBy: jest.fn(),
@@ -44,6 +49,7 @@ describe('MedicineApplicationsService', () => {
     save: jest.fn(),
     find: jest.fn(),
     remove: jest.fn(),
+    createQueryBuilder: jest.fn(),
   };
 
   const mockAnimalsService = {
@@ -55,8 +61,28 @@ describe('MedicineApplicationsService', () => {
     update: jest.fn(),
   };
 
+  const createQueryBuilder = () => {
+    queryBuilder = {
+      leftJoinAndSelect: jest.fn().mockReturnThis(),
+      leftJoin: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      addSelect: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      addOrderBy: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      take: jest.fn().mockReturnThis(),
+      clone: jest.fn().mockReturnThis(),
+      getCount: jest.fn(),
+      getMany: jest.fn(),
+    };
+
+    return queryBuilder;
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
+    mockMedicineApplicationRepository.createQueryBuilder.mockReturnValue(createQueryBuilder());
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -97,7 +123,6 @@ describe('MedicineApplicationsService', () => {
       const dto = mockCreateMedicineApplicationDto({
         nextApplicationAt: undefined,
         frequency: undefined,
-        endsAt: undefined,
       });
       const mockUser = mockUserEntity();
       const mockAnimal = mockAnimalEntity();
@@ -105,7 +130,6 @@ describe('MedicineApplicationsService', () => {
       const mockMedicineApplication = mockMedicineApplicationEntity({
         nextApplicationAt: null,
         frequency: null,
-        endsAt: null,
         googleCalendarEventId: null,
       });
 
@@ -113,6 +137,7 @@ describe('MedicineApplicationsService', () => {
       mockMedicinesService.findOne.mockResolvedValueOnce(mockMedicine);
       mockMedicineApplicationRepository.create.mockReturnValueOnce(mockMedicineApplication);
       mockMedicineApplicationRepository.save.mockResolvedValueOnce(mockMedicineApplication);
+      mockMedicineApplicationRepository.find.mockResolvedValueOnce([]);
 
       const result = await medicineApplicationsService.create(animalUuid, dto, mockUser);
 
@@ -152,6 +177,7 @@ describe('MedicineApplicationsService', () => {
         ...mockMedicineApplication,
         googleCalendarEventId: 'event-id-123',
       });
+      mockMedicineApplicationRepository.find.mockResolvedValueOnce([]);
       (googleCalendar.createEvent as jest.Mock).mockResolvedValueOnce(googleCalendarEvent);
 
       const result = await medicineApplicationsService.create(animalUuid, dto, mockUser);
@@ -167,7 +193,6 @@ describe('MedicineApplicationsService', () => {
       expect(googleCalendar.createEvent).toHaveBeenCalledWith({
         summary: `Aplicar ${mockMedicine.name} no ${mockAnimal.name}`,
         start: dto.nextApplicationAt,
-        end: dto.endsAt,
         frequency: dto.frequency,
       });
       expect(mockMedicineApplicationRepository.save).toHaveBeenCalledTimes(2);
@@ -197,6 +222,7 @@ describe('MedicineApplicationsService', () => {
         ...mockMedicineApplication,
         googleCalendarEventId: null,
       });
+      mockMedicineApplicationRepository.find.mockResolvedValueOnce([]);
       (googleCalendar.createEvent as jest.Mock).mockResolvedValueOnce(googleCalendarEvent);
 
       const result = await medicineApplicationsService.create(animalUuid, dto, mockUser);
@@ -214,7 +240,6 @@ describe('MedicineApplicationsService', () => {
       const dto = mockCreateMedicineApplicationDto({
         nextApplicationAt: undefined,
         frequency: undefined,
-        endsAt: undefined,
       });
       const mockUser = mockUserEntity();
       const mockAnimal = mockAnimalEntity();
@@ -222,7 +247,6 @@ describe('MedicineApplicationsService', () => {
       const mockMedicineApplication = mockMedicineApplicationEntity({
         nextApplicationAt: null,
         frequency: null,
-        endsAt: null,
         googleCalendarEventId: null,
       });
 
@@ -230,6 +254,7 @@ describe('MedicineApplicationsService', () => {
       mockMedicinesService.findOne.mockResolvedValueOnce(mockMedicine);
       mockMedicineApplicationRepository.create.mockReturnValueOnce(mockMedicineApplication);
       mockMedicineApplicationRepository.save.mockResolvedValueOnce(mockMedicineApplication);
+      mockMedicineApplicationRepository.find.mockResolvedValueOnce([]);
 
       await medicineApplicationsService.create(animalUuid, dto, mockUser);
 
@@ -242,7 +267,6 @@ describe('MedicineApplicationsService', () => {
         quantity: 10,
         nextApplicationAt: undefined,
         frequency: undefined,
-        endsAt: undefined,
       });
       const mockUser = mockUserEntity();
       const mockAnimal = mockAnimalEntity();
@@ -264,7 +288,6 @@ describe('MedicineApplicationsService', () => {
       const dto = mockCreateMedicineApplicationDto({
         nextApplicationAt: undefined,
         frequency: undefined,
-        endsAt: undefined,
       });
       const mockUser = mockUserEntity();
 
@@ -284,7 +307,6 @@ describe('MedicineApplicationsService', () => {
       const dto = mockCreateMedicineApplicationDto({
         nextApplicationAt: undefined,
         frequency: undefined,
-        endsAt: undefined,
       });
       const mockUser = mockUserEntity();
       const mockAnimal = mockAnimalEntity();
@@ -305,23 +327,59 @@ describe('MedicineApplicationsService', () => {
   describe('findAllByAnimal', () => {
     it('should return paginated medicine applications for an animal', async () => {
       const animalUuid = 'animal-uuid-123';
-      const paginated = {
-        data: [mockMedicineApplicationEntity(), mockMedicineApplicationEntity({ uuid: 'application-uuid-456' })],
-      };
-      (paginate as jest.Mock).mockResolvedValueOnce(paginated);
+      const paginatedItems = [
+        mockMedicineApplicationEntity(),
+        mockMedicineApplicationEntity({ uuid: 'application-uuid-456' }),
+      ];
+      queryBuilder.getCount.mockResolvedValueOnce(2);
+      queryBuilder.getMany.mockResolvedValueOnce(paginatedItems);
 
-      const query = {};
+      const query = { page: '1', limit: '10', sortBy: 'createdAt:DESC' };
       const result = await medicineApplicationsService.findAllByAnimal(
         animalUuid,
         query as unknown as import('nestjs-paginate').PaginateQuery,
       );
 
-      expect(paginate).toHaveBeenCalledWith(
-        query,
-        medicineApplicationRepository,
-        expect.objectContaining({ where: { animal: { uuid: animalUuid } } }),
-      );
-      expect(result).toBe(paginated);
+      expect(mockMedicineApplicationRepository.createQueryBuilder).toHaveBeenCalledWith('medicineApplication');
+      expect(queryBuilder.leftJoinAndSelect).toHaveBeenCalledWith('medicineApplication.medicine', 'medicine');
+      expect(queryBuilder.leftJoin).toHaveBeenCalledWith('medicineApplication.animal', 'animal');
+      expect(queryBuilder.where).toHaveBeenCalledWith('animal.uuid = :animalUuid', { animalUuid });
+      expect(queryBuilder.addSelect).toHaveBeenCalled();
+      expect(queryBuilder.orderBy).toHaveBeenCalledWith('status_order', 'ASC');
+      expect(queryBuilder.addOrderBy).toHaveBeenCalledWith('medicineApplication.createdAt', 'DESC');
+      expect(result.data).toHaveLength(2);
+      expect(result.data[0]).toHaveProperty('status');
+      expect(result.meta).toMatchObject({
+        itemsPerPage: 10,
+        totalItems: 2,
+        currentPage: 1,
+        totalPages: 1,
+      });
+    });
+
+    it('should sort only by medicine name when explicitly requested', async () => {
+      const animalUuid = 'animal-uuid-123';
+      queryBuilder.getCount.mockResolvedValueOnce(0);
+      queryBuilder.getMany.mockResolvedValueOnce([]);
+
+      await medicineApplicationsService.findAllByAnimal(animalUuid, {
+        sortBy: [['medicine.name', 'ASC']],
+      } as unknown as import('nestjs-paginate').PaginateQuery);
+
+      expect(queryBuilder.orderBy).toHaveBeenCalledWith('medicine.name', 'ASC');
+      expect(queryBuilder.addOrderBy).not.toHaveBeenCalledWith('medicineApplication.createdAt', 'DESC');
+    });
+
+    it('should sort by status when explicitly requested', async () => {
+      const animalUuid = 'animal-uuid-123';
+      queryBuilder.getCount.mockResolvedValueOnce(0);
+      queryBuilder.getMany.mockResolvedValueOnce([]);
+
+      await medicineApplicationsService.findAllByAnimal(animalUuid, {
+        sortBy: [['status', 'DESC']],
+      } as unknown as import('nestjs-paginate').PaginateQuery);
+
+      expect(queryBuilder.orderBy).toHaveBeenCalledWith('status_order', 'DESC');
     });
   });
 

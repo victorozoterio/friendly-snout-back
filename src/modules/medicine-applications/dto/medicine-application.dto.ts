@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MedicineApplicationFrequency } from 'src/modules/medicine-applications/utils';
+import { MedicineApplicationFrequency, MedicineApplicationStatus } from 'src/modules/medicine-applications/utils';
 
 export class MedicineApplicationDto {
   @ApiProperty()
@@ -17,8 +17,8 @@ export class MedicineApplicationDto {
   @ApiProperty({ enum: MedicineApplicationFrequency })
   frequency: MedicineApplicationFrequency;
 
-  @ApiProperty()
-  endsAt: Date;
+  @ApiProperty({ enum: MedicineApplicationStatus })
+  status: MedicineApplicationStatus;
 
   @ApiProperty()
   googleCalendarEventId: string;

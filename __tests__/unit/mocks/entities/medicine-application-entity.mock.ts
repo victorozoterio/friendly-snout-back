@@ -12,7 +12,6 @@ export const mockMedicineApplicationEntity = (
   appliedAt: new Date('2024-01-10'),
   nextApplicationAt: new Date('2024-01-17'),
   frequency: MedicineApplicationFrequency.WEEKLY,
-  endsAt: new Date('2024-02-10'),
   googleCalendarEventId: 'event-id-123',
   createdAt: new Date('2024-01-10'),
   animal: mockAnimalEntity(),

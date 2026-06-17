@@ -20,9 +20,6 @@ export class MedicineApplicationEntity {
   @Column({ name: 'frequency', type: 'varchar', nullable: true })
   frequency: string | null;
 
-  @Column({ name: 'ends_at', type: 'timestamptz', nullable: true })
-  endsAt: Date | null;
-
   @Column({ name: 'google_calendar_event_id', type: 'varchar', nullable: true })
   googleCalendarEventId: string | null;
 

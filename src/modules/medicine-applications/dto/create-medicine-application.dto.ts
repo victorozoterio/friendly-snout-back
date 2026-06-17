@@ -38,9 +38,4 @@ export class CreateMedicineApplicationDto {
   @IsEnum(MedicineApplicationFrequency)
   @ApiProperty({ enum: MedicineApplicationFrequency })
   frequency?: MedicineApplicationFrequency;
-
-  @IsOptional()
-  @IsDateString()
-  @ApiProperty()
-  endsAt?: string;
 }

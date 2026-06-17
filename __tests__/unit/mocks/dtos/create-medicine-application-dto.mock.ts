@@ -9,6 +9,5 @@ export const mockCreateMedicineApplicationDto = (
   appliedAt: '2024-01-10T10:00:00Z',
   nextApplicationAt: '2024-01-17T10:00:00Z',
   frequency: MedicineApplicationFrequency.WEEKLY,
-  endsAt: '2024-02-10T10:00:00Z',
   ...overrides,
 });

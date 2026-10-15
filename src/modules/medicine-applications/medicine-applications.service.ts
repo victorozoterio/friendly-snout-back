@@ -50,18 +50,18 @@ export class MedicineApplicationsService {
     }
 
     if (dto.nextApplicationAt) {
-      const event = await googleCalendar.createEvent({
-        summary: `Aplicar ${medicine.name} no ${animal.name}`,
-        start: dto.nextApplicationAt,
-        frequency: dto.frequency,
-      });
+      if (googleCalendar.isConfigured()) {
+        const event = await googleCalendar.createEvent({
+          summary: `Aplicar ${medicine.name} no ${animal.name}`,
+          start: dto.nextApplicationAt,
+          frequency: dto.frequency,
+        });
 
-      savedMedicineApplication.googleCalendarEventId = event.id ?? null;
-      await this.repository.save(savedMedicineApplication);
+        savedMedicineApplication.googleCalendarEventId = event.id ?? null;
+        await this.repository.save(savedMedicineApplication);
+      }
 
-      await this.pushNotificationsService
-        .scheduleMedicineApplicationReminder(savedMedicineApplication)
-        .catch(() => undefined);
+      await this.pushNotificationsService.scheduleMedicineApplicationReminder(savedMedicineApplication, user);
     }
 
     return {

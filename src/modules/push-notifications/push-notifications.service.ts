@@ -30,6 +30,7 @@ export class PushNotificationsService implements OnModuleDestroy, OnModuleInit {
   ) {}
 
   onModuleInit() {
+    this.logger.log('Processador de notificações push inicializado.');
     void this.processPendingJobs();
     this.timer = setInterval(() => void this.processPendingJobs(), 60_000);
   }
@@ -46,6 +47,7 @@ export class PushNotificationsService implements OnModuleDestroy, OnModuleInit {
     device.platform = dto.platform;
     device.isActive = true;
     await this.devicesRepository.save(device);
+    this.logger.log(`Dispositivo push registrado para o usuário ${user.uuid} (${this.maskToken(dto.expoPushToken)}).`);
   }
 
   async unregisterDevice(user: UserEntity, expoPushToken: string) {
@@ -53,9 +55,17 @@ export class PushNotificationsService implements OnModuleDestroy, OnModuleInit {
   }
 
   /** Agenda o primeiro lembrete persistente sem interferir no evento do Google Calendar. */
-  async scheduleMedicineApplicationReminder(application: MedicineApplicationEntity) {
-    if (!application.nextApplicationAt || !application.user) return;
-    await this.createJob(application, application.user, new Date(application.nextApplicationAt));
+  async scheduleMedicineApplicationReminder(application: MedicineApplicationEntity, user: UserEntity) {
+    if (!application.nextApplicationAt) {
+      this.logger.debug(`Lembrete não criado para ${application.uuid}: aplicação sem próximo horário.`);
+      return;
+    }
+
+    try {
+      await this.createJob(application, user, new Date(application.nextApplicationAt));
+    } catch (error: unknown) {
+      this.logger.error(`Falha ao criar lembrete para ${application.uuid}: ${String(error)}`);
+    }
   }
 
   /** Cancela lembretes pendentes ao cancelar ou substituir um agendamento. */
@@ -73,7 +83,12 @@ export class PushNotificationsService implements OnModuleDestroy, OnModuleInit {
 
   private async createJob(application: MedicineApplicationEntity, user: UserEntity, occurrenceAt: Date) {
     const sendAt = new Date(occurrenceAt.getTime() - REMINDER_LEAD_TIME_MS);
-    if (sendAt <= new Date()) return;
+    if (sendAt <= new Date()) {
+      this.logger.warn(
+        `Lembrete não criado para ${application.uuid}: o horário ${occurrenceAt.toISOString()} não possui 15 minutos de antecedência.`,
+      );
+      return;
+    }
 
     const exists = await this.jobsRepository.findOne({
       where: { medicineApplication: { uuid: application.uuid }, occurrenceAt, user: { uuid: user.uuid } },
@@ -90,9 +105,15 @@ export class PushNotificationsService implements OnModuleDestroy, OnModuleInit {
           user,
         }),
       );
+      this.logger.log(`Lembrete persistido para ${application.uuid} às ${sendAt.toISOString()}.`);
     } catch (error: unknown) {
       // O índice único mantém a operação idempotente quando mais de uma instância tenta agendar o mesmo lembrete.
-      this.logger.debug(`Lembrete já agendado ou indisponível para ${application.uuid}: ${String(error)}`);
+      if (this.isUniqueConstraintViolation(error)) {
+        this.logger.debug(`Lembrete já agendado para ${application.uuid}.`);
+        return;
+      }
+
+      throw error;
     }
   }
 
@@ -191,6 +212,16 @@ export class PushNotificationsService implements OnModuleDestroy, OnModuleInit {
 
     const payload = (await response.json()) as { data?: ExpoTicket[] };
     const tickets = payload.data ?? [];
+    const deliveryErrors = tickets
+      .filter((ticket) => ticket.status === 'error' && ticket.details?.error !== 'DeviceNotRegistered')
+      .map((ticket) => ticket.details?.error ?? 'erro desconhecido');
+    if (deliveryErrors.length === tickets.length && deliveryErrors.length > 0) {
+      throw new Error(`Expo recusou todos os dispositivos: ${deliveryErrors.join(', ')}`);
+    }
+    if (deliveryErrors.length > 0) {
+      this.logger.warn(`Expo recusou parte dos dispositivos: ${deliveryErrors.join(', ')}.`);
+    }
+
     await Promise.all(
       tickets.map(async (ticket, index) => {
         if (ticket.status === 'error' && ticket.details?.error === 'DeviceNotRegistered') {
@@ -269,5 +300,13 @@ export class PushNotificationsService implements OnModuleDestroy, OnModuleInit {
       minute: '2-digit',
       timeZone: 'America/Sao_Paulo',
     }).format(date);
+  }
+
+  private isUniqueConstraintViolation(error: unknown) {
+    return typeof error === 'object' && error !== null && 'code' in error && error.code === '23505';
+  }
+
+  private maskToken(token: string) {
+    return `${token.slice(0, 12)}…${token.slice(-6)}`;
   }
 }

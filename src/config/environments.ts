@@ -21,9 +21,9 @@ const envSchema = z.object({
   JWT_SECRET_KEY: z.string(),
 
   // Google Calendar
-  GOOGLE_CALENDAR_ID: z.string(),
-  GOOGLE_SERVICE_ACCOUNT_EMAIL: z.string(),
-  GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: z.string(),
+  GOOGLE_CALENDAR_ID: z.string().optional(),
+  GOOGLE_SERVICE_ACCOUNT_EMAIL: z.string().optional(),
+  GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: z.string().optional(),
 
   // Cloudflare
   CLOUDFLARE_ENDPOINT: z.string(),

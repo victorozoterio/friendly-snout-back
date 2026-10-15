@@ -5,6 +5,7 @@ import { googleCalendar } from 'src/lib';
 import { IsNull, Not, Repository } from 'typeorm';
 import { AnimalsService } from '../animals/animals.service';
 import { MedicinesService } from '../medicines/medicines.service';
+import { PushNotificationsService } from '../push-notifications/push-notifications.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { CreateMedicineApplicationDto } from './dto/create-medicine-application.dto';
 import { MedicineApplicationEntity } from './entities/medicine-application.entity';
@@ -15,6 +16,7 @@ export class MedicineApplicationsService {
   constructor(
     private readonly animalsService: AnimalsService,
     private readonly medicinesService: MedicinesService,
+    private readonly pushNotificationsService: PushNotificationsService,
     @InjectRepository(MedicineApplicationEntity)
     private readonly repository: Repository<MedicineApplicationEntity>,
   ) {}
@@ -56,6 +58,10 @@ export class MedicineApplicationsService {
 
       savedMedicineApplication.googleCalendarEventId = event.id ?? null;
       await this.repository.save(savedMedicineApplication);
+
+      await this.pushNotificationsService
+        .scheduleMedicineApplicationReminder(savedMedicineApplication)
+        .catch(() => undefined);
     }
 
     return {
@@ -132,6 +138,8 @@ export class MedicineApplicationsService {
       await googleCalendar.deleteEvent(medicineApplicationExists.googleCalendarEventId);
     }
 
+    await this.pushNotificationsService.cancelMedicineApplicationReminders(uuid).catch(() => undefined);
+
     const medicine = medicineApplicationExists.medicine;
     const medicineHasInfiniteQuantity = medicine.quantity === -1;
 
@@ -163,6 +171,10 @@ export class MedicineApplicationsService {
         if (medicineApplication.googleCalendarEventId) {
           await googleCalendar.deleteEvent(medicineApplication.googleCalendarEventId);
         }
+
+        await this.pushNotificationsService
+          .cancelMedicineApplicationReminders(medicineApplication.uuid)
+          .catch(() => undefined);
 
         medicineApplication.nextApplicationAt = null;
         medicineApplication.googleCalendarEventId = null;

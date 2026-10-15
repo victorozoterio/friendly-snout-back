@@ -6,6 +6,7 @@ import { AnimalsService } from 'src/modules/animals/animals.service';
 import { MedicineApplicationEntity } from 'src/modules/medicine-applications/entities/medicine-application.entity';
 import { MedicineApplicationsService } from 'src/modules/medicine-applications/medicine-applications.service';
 import { MedicinesService } from 'src/modules/medicines/medicines.service';
+import { PushNotificationsService } from 'src/modules/push-notifications/push-notifications.service';
 import { Repository } from 'typeorm';
 import {
   mockAnimalEntity,
@@ -61,6 +62,11 @@ describe('MedicineApplicationsService', () => {
     update: jest.fn(),
   };
 
+  const mockPushNotificationsService = {
+    cancelMedicineApplicationReminders: jest.fn().mockResolvedValue(undefined),
+    scheduleMedicineApplicationReminder: jest.fn().mockResolvedValue(undefined),
+  };
+
   const createQueryBuilder = () => {
     queryBuilder = {
       leftJoinAndSelect: jest.fn().mockReturnThis(),
@@ -98,6 +104,10 @@ describe('MedicineApplicationsService', () => {
         {
           provide: MedicinesService,
           useValue: mockMedicinesService,
+        },
+        {
+          provide: PushNotificationsService,
+          useValue: mockPushNotificationsService,
         },
       ],
     }).compile();

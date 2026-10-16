@@ -3,7 +3,6 @@ import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { UserEntity } from 'src/modules/users/entities/user.entity';
 import { IS_PUBLIC_ROUTE_KEY } from '../decorators';
-import { Environment } from '../utils';
 
 @Injectable()
 export class BearerAuthGuard extends AuthGuard('jwt') {
@@ -12,8 +11,6 @@ export class BearerAuthGuard extends AuthGuard('jwt') {
   }
 
   canActivate(context: ExecutionContext) {
-    if (process.env.NODE_ENV === Environment.DEV) return true;
-
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_ROUTE_KEY, [
       context.getHandler(),
       context.getClass(),

@@ -1,6 +1,6 @@
 import { addHours, endOfDay, format, parseISO } from 'date-fns';
 import { calendar_v3 } from 'googleapis';
-import { getCalendarClient, getCalendarId } from '../config';
+import { getCalendarClient, getCalendarId, isGoogleCalendarConfigured } from '../config';
 import { MedicineApplicationFrequency } from '../modules/medicine-applications/utils';
 
 export interface CreateEventDto {
@@ -12,6 +12,10 @@ export interface CreateEventDto {
 }
 
 async function createEvent(dto: CreateEventDto): Promise<calendar_v3.Schema$Event> {
+  if (!isGoogleCalendarConfigured()) {
+    throw new Error('Google Calendar is not configured');
+  }
+
   const { summary, description, start, end, frequency } = dto;
 
   const startDate = parseISO(start);
@@ -66,6 +70,10 @@ async function createEvent(dto: CreateEventDto): Promise<calendar_v3.Schema$Even
 }
 
 async function deleteEvent(eventId: string): Promise<void> {
+  if (!isGoogleCalendarConfigured()) {
+    return;
+  }
+
   const calendarClient = getCalendarClient();
   const calendarId = getCalendarId();
 
@@ -77,6 +85,7 @@ async function deleteEvent(eventId: string): Promise<void> {
 }
 
 export const googleCalendar = {
+  isConfigured: isGoogleCalendarConfigured,
   createEvent,
   deleteEvent,
 };

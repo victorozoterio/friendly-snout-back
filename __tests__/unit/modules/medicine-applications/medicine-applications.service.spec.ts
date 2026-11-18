@@ -6,6 +6,7 @@ import { AnimalsService } from 'src/modules/animals/animals.service';
 import { MedicineApplicationEntity } from 'src/modules/medicine-applications/entities/medicine-application.entity';
 import { MedicineApplicationsService } from 'src/modules/medicine-applications/medicine-applications.service';
 import { MedicinesService } from 'src/modules/medicines/medicines.service';
+import { PushNotificationsService } from 'src/modules/push-notifications/push-notifications.service';
 import { Repository } from 'typeorm';
 import {
   mockAnimalEntity,
@@ -17,6 +18,7 @@ import {
 
 jest.mock('src/lib', () => ({
   googleCalendar: {
+    isConfigured: jest.fn(),
     createEvent: jest.fn(),
     deleteEvent: jest.fn(),
   },
@@ -61,6 +63,11 @@ describe('MedicineApplicationsService', () => {
     update: jest.fn(),
   };
 
+  const mockPushNotificationsService = {
+    cancelMedicineApplicationReminders: jest.fn().mockResolvedValue(undefined),
+    scheduleMedicineApplicationReminder: jest.fn().mockResolvedValue(undefined),
+  };
+
   const createQueryBuilder = () => {
     queryBuilder = {
       leftJoinAndSelect: jest.fn().mockReturnThis(),
@@ -99,6 +106,10 @@ describe('MedicineApplicationsService', () => {
           provide: MedicinesService,
           useValue: mockMedicinesService,
         },
+        {
+          provide: PushNotificationsService,
+          useValue: mockPushNotificationsService,
+        },
       ],
     }).compile();
 
@@ -118,6 +129,10 @@ describe('MedicineApplicationsService', () => {
   });
 
   describe('create', () => {
+    beforeEach(() => {
+      (googleCalendar.isConfigured as jest.Mock).mockReturnValue(true);
+    });
+
     it('should create medicine application without Google Calendar event', async () => {
       const animalUuid = 'animal-uuid-123';
       const dto = mockCreateMedicineApplicationDto({
@@ -155,6 +170,30 @@ describe('MedicineApplicationsService', () => {
       });
       expect(googleCalendar.createEvent).not.toHaveBeenCalled();
       expect(result.googleCalendarEventId).toBeNull();
+    });
+
+    it('should schedule a push notification without creating a Google Calendar event when it is not configured', async () => {
+      const animalUuid = 'animal-uuid-123';
+      const dto = mockCreateMedicineApplicationDto();
+      const mockUser = mockUserEntity();
+      const mockAnimal = mockAnimalEntity();
+      const mockMedicine = mockMedicineEntity({ quantity: 10 });
+      const mockMedicineApplication = mockMedicineApplicationEntity({ googleCalendarEventId: null });
+
+      mockAnimalsService.findOne.mockResolvedValueOnce(mockAnimal);
+      mockMedicinesService.findOne.mockResolvedValueOnce(mockMedicine);
+      mockMedicineApplicationRepository.create.mockReturnValueOnce(mockMedicineApplication);
+      mockMedicineApplicationRepository.save.mockResolvedValueOnce(mockMedicineApplication);
+      mockMedicineApplicationRepository.find.mockResolvedValueOnce([]);
+      (googleCalendar.isConfigured as jest.Mock).mockReturnValueOnce(false);
+
+      await medicineApplicationsService.create(animalUuid, dto, mockUser);
+
+      expect(googleCalendar.createEvent).not.toHaveBeenCalled();
+      expect(mockPushNotificationsService.scheduleMedicineApplicationReminder).toHaveBeenCalledWith(
+        mockMedicineApplication,
+        mockUser,
+      );
     });
 
     it('should create medicine application with Google Calendar event', async () => {
